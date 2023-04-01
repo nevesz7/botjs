@@ -1,6 +1,6 @@
-var express = require('express');
-var { graphqlHTTP } = require('express-graphql');
-var { graphql, buildSchema } = require('graphql');
+const express = require('express');
+const { graphqlHTTP } = require('express-graphql');
+const { graphql, buildSchema } = require('graphql');
 
 //Construct a schema, using GraphQL schema language
 var schema = buildSchema(`
