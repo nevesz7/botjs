@@ -2,33 +2,29 @@ import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 
 const typeDefs = `
-	type Book {
+	type String {
 		title: String
-		author: String
+		string: String
 	}
 	type Query {
-		books: [Book]
+		strings: [String]
 	}
 `;
 
-const books = [
-	{
-		title: 'Eragon',
-		author: 'Chistopher Paolini',
-	},
-	{
-		title: 'Golden Compass',
-		author: 'Philip Pullman'
-	},
-	{
-		title: 'Maze Runner',
-		author: 'James Dashner',
-	},
+const strings = [
+{
+	title: 'hello',
+	string: 'Hello Taqos',
+},
+{
+	title: 'server',
+	string: 'apollo',
+},
 ];
 
 const resolvers = {
 	Query: {
-		books: () => books,
+		strings : () => strings,
 	},
 };
 
