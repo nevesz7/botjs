@@ -3,29 +3,28 @@ const { graphqlHTTP } = require('express-graphql');
 const { graphql, buildSchema } = require('graphql');
 
 //Construct a schema, using GraphQL schema language
-var schema = buildSchema(`
+const schema = buildSchema(`
 	type Query {
 		hello : String
 	}
 `);
 
 // The rootValue provides a resolver function for each API endpoint
-var root = {
+const root = {
 	hello: () => {
 		return 'Hello Taqos!';
 	}
 };
 
-var app = express();
+const app = express();
 app.use('/graphql', graphqlHTTP({
 	schema: schema,
 	rootValue: root,
 	graphiql: true,
 }));
 
-var printServerStart = function () {
+const printServerStart = function () {
     console.log('Running a GraphQL API server at http://localhost:4000/graphql');
 };
 
-app.listen(4000, printServerStart());
-
+app.listen(4000, printServerStart);
