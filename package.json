@@ -2,16 +2,20 @@
   "name": "bot.taq",
   "version": "1.0.0",
   "description": "- Free Taq.os - Learning project of bot programming, part of Institute Taqtile selective proccess - [Environment and tools - to be filled] - [Steps to run and debug - to be filled]",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+  "main": "index.js",
+  "dependencies": {
+    "@apollo/server": "^4.5.0"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "express": "^4.18.2",
-    "express-graphql": "^0.12.0",
-    "graphql": "^15.8.0"
+  "type": "module",
+  "scripts": {
+    "compile": "tsc",
+    "start": "npm run compile && node ./dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "typescript": "^5.0.3"
   }
 }
