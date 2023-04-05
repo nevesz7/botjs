@@ -1,6 +1,6 @@
-import express from "@express";
+import express = from "express";
 import { graphqlHTTP } from "@express-graphql";
-import { buildSchema } from "@graphql";
+import { graphql, buildSchema } from "@graphql";
 
 //Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
