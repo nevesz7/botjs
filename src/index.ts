@@ -1,3 +1,5 @@
+import "reflect-metadata";
+import { CreateDateColumn, createConnection } from "typeorm";
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { User } from "./entities/user";
@@ -23,4 +25,22 @@ const start = async () => {
   });
   console.log("Server ready at http://localhost:4000/");
 };
+
+async () => {
+  const connection = await createConnection({
+    type: "postgres",
+    host: "localhost",
+    port: 5432,
+    username: "neves7",
+    password: "arara123",
+    database: "nevesl-db",
+    entities: [User],
+  });
+};
+
+const newUser = new User();
+newUser.name = "Joe Goldberg";
+newUser.id = 1234567;
+await newUser.save();
+
 start();

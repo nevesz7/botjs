@@ -1,24 +1,26 @@
 {
-  "name": "bot.taq",
-  "version": "1.0.0",
-  "description": "- Free Taq.os - Learning project of bot programming, part of Institute Taqtile selective proccess - [Environment and tools - to be filled] - [Steps to run and debug - to be filled]",
-  "main": "index.js",
-  "dependencies": {
-    "@apollo/server": "^4.5.0",
-    "pg": "^8.10.0",
-    "typeorm": "^0.3.12"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "scripts": {
-    "compile": "tsc",
-    "start": "npm run compile && node ./dist/index.js"
-  },
-  "devDependencies": {
-    "@types/node": "^18.15.11",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "typescript": "^5.0.3"
-  }
+   "name": "bot.taq",
+   "version": "1.0.0",
+   "description": "- Free Taq.os - Learning project of bot programming, part of Institute Taqtile selective proccess - [Environment and tools - to be filled] - [Steps to run and debug - to be filled]",
+   "main": "index.ts",
+   "dependencies": {
+      "@apollo/server": "^4.5.0",
+      "pg": "^8.4.0",
+      "reflect-metadata": "^0.1.13",
+      "typeorm": "0.3.12"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "scripts": {
+      "compile": "tsc",
+      "start": "ts-node src/index.ts",
+      "typeorm": "typeorm-ts-node-commonjs"
+   },
+   "devDependencies": {
+      "@types/node": "^16.18.23",
+      "@typescript-eslint/eslint-plugin": "^5.57.1",
+      "ts-node": "^10.7.0",
+      "typescript": "4.5.2"
+   }
 }
