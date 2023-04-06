@@ -1,5 +1,6 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
+import { User } from "./entities/user";
 
 const typeDefs = `
 	type Query {
