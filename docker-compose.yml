@@ -1,6 +1,7 @@
+
 services:
   localdb:
-    image: postgres:15.1 # you can pick the most recent version available
+    image: postgres:15.2 # you can pick the most recent version available
     ports:
       - "5432:5432"
     volumes:
@@ -11,7 +12,7 @@ services:
       - POSTGRES_DB=nevesl-db
 
   testdb:
-    image: postgres:15.1
+    image: postgres:15.2
     ports:
       - "5433:5432"
     volumes:
