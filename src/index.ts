@@ -26,7 +26,7 @@ const start = async () => {
   console.log("Server ready at http://localhost:4000/");
 };
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: "postgres",
   host: "localhost",
   port: 5432,
