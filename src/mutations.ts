@@ -16,6 +16,7 @@ export const insertUser = {
     const newUser = new User();
     newUser.name = name;
     newUser.email = email;
+    newUser.password = password;
     newUser.age = age;
     newUser.profession = profession;
     await UserRepository.save(newUser);
