@@ -2,16 +2,8 @@ import "reflect-metadata";
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { AppDataSource } from "./dataSource";
-
-const typeDefs = `
-	type Query {
-		hello: String
-	}
-`;
-
-export const resolvers = {
-  Query: { hello: () => "Hello Taqos!" },
-};
+import { resolvers } from "./resolvers";
+import { typeDefs } from "./schema";
 
 const server = new ApolloServer({
   typeDefs,
