@@ -1,5 +1,3 @@
-import { User } from "./entities/user";
-
 export const typeDefs = `
 type User {
 	name: String,
