@@ -1,25 +1,25 @@
 export const typeDefs = `
 input UserInput {
-	name: String,
-	email: String,
-	password: String,
-	age: Int,
+	name: String
+	email: String
+	password: String
+	age: Int
 	profession: String
 }
 type User {
-	name: String,
-	email: String,
-	password: String,
-	age: Int,
-	profession: String,
+	name: String
+	email: String
+	password: String
+	age: Int
+	profession: String
 	id: Int
 }
 type Query {
-	users: [User]
+	users: String
 }
 type Mutation {
 	insertUser( 
-		newUser: UserInput
+		myUser: UserInput
 	): User
 }
 `;

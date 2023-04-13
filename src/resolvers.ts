@@ -3,14 +3,16 @@ import { User } from "./entities/user";
 
 const UserRepository = AppDataSource.getRepository(User);
 
-const containsUppercase = (str) => {
-  return /[A-Z]/.test(str);
-};
-const containsLowercase = (str) => {
-  return /[a-z]/.test(str);
-};
 const isValidPassword = (str) => {
-  return containsLowercase(str), containsUppercase(str), str.length > 7;
+  return /[a-zA-Z\d]{8,}/.test(str);
+};
+
+type UserInput = {
+  name: string;
+  email: string;
+  password: string;
+  age: number;
+  profession: string;
 };
 
 export const resolvers = {
@@ -18,26 +20,26 @@ export const resolvers = {
     users: () => "Hello Taqos!",
   },
   Mutation: {
-    insertUser: async (_, { UserInput }) => {
+    insertUser: async (_, { myUser }: { myUser: UserInput }) => {
       const existingUser = await UserRepository.findOneBy({
-        email: UserInput.email,
+        email: myUser.email,
       });
       if (existingUser) {
         throw new Error(
           "Já existe um usuário cadastrado com este email, favor utilize outro!"
         );
       }
-      if (!isValidPassword(UserInput.password)) {
+      if (!isValidPassword(myUser.password)) {
         throw new Error(
           "A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula e mais de 8 números."
         );
       }
       const newUser = new User();
-      newUser.name = UserInput.name;
-      newUser.email = UserInput.email;
-      newUser.password = UserInput.password;
-      newUser.age = UserInput.age;
-      newUser.profession = UserInput.profession;
+      newUser.name = myUser.name;
+      newUser.email = myUser.email;
+      newUser.password = myUser.password;
+      newUser.age = myUser.age;
+      newUser.profession = myUser.profession;
       await UserRepository.save(newUser);
       return newUser;
     },
