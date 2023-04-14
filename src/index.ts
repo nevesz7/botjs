@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import { AppDataSource } from "./dataSource";
+import { AppDataSource } from "./data-source";
 import { resolvers } from "./resolvers";
 import { typeDefs } from "./schema";
 
