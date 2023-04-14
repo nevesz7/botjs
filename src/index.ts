@@ -18,7 +18,7 @@ const start = async () => {
   console.log("Server ready at http://localhost:4000/");
 };
 
-export const initializeData = async () => {
+const initializeData = async () => {
   await AppDataSource.initialize();
 };
 
