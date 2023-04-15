@@ -22,30 +22,30 @@ export const resolvers = {
     users: () => "Hello Taqos!",
   },
   Mutation: {
-    insertUser: async (_, { myUser }: { myUser: UserInput }) => {
+    insertUser: async (_, { requestData }: { requestData: UserInput }) => {
       const existingUser = await UserRepository.findOneBy({
-        email: myUser.email,
+        email: requestData.email,
       });
       if (existingUser) {
         throw new Error(
           "Já existe um usuário cadastrado com este email, favor utilize outro!"
         );
       }
-      if (!isValidPassword(myUser.password)) {
+      if (!isValidPassword(requestData.password)) {
         throw new Error(
           "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula, um número."
         );
       }
-      if (myUser.age < 18) {
+      if (requestData.age < 18) {
         throw new Error("Usuários precisam ter 18 anos ou mais.");
       }
-      const hash = createHash("sha256").update(myUser.password).digest("hex");
+      const hash = createHash("sha256").update(requestData.password).digest("hex");
       const newUser = new User();
-      newUser.name = myUser.name;
-      newUser.email = myUser.email;
+      newUser.name = requestData.name;
+      newUser.email = requestData.email;
       newUser.password = hash;
-      newUser.age = myUser.age;
-      newUser.profession = myUser.profession;
+      newUser.age = requestData.age;
+      newUser.profession = requestData.profession;
       await UserRepository.save(newUser);
       const returnUser = new ReturnUser();
       returnUser.id = newUser.id;
