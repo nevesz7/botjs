@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { Entity, Column } from "typeorm";
 
 @Entity({ name: "returnUser" })
