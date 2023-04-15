@@ -1,6 +1,6 @@
 import { AppDataSource } from "./data-source";
 import { User } from "./entities/user";
-import { ReturnUser } from "./entities/returnUser";
+import { Return-user } from "./entities/returnUser";
 import { createHash } from "crypto";
 
 const UserRepository = AppDataSource.getRepository(User);
