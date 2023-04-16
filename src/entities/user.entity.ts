@@ -1,13 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity({ name: "user" })
-export class User {
+export class user {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    length: 100,
-  })
+  @Column()
   name: string;
 
   @Column({
@@ -19,7 +17,7 @@ export class User {
   password: string;
 
   @Column()
-  age: number;
+  date_of_birth: Date;
 
   @Column()
   profession: string;
