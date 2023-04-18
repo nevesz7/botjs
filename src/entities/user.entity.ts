@@ -2,24 +2,20 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity({ name: "user" })
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: "smallint" })
   id: number;
 
-  @Column({
-    length: 100,
-  })
+  @Column()
   name: string;
 
-  @Column({
-    length: 50,
-  })
+  @Column()
   email: string;
 
   @Column()
   password: string;
 
   @Column()
-  age: number;
+  date_of_birth: Date;
 
   @Column()
   profession: string;

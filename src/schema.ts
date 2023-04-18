@@ -3,15 +3,14 @@ input UserInput {
 	name: String!
 	email: String!
 	password: String!
-	age: Int!
-	profession: String!
+	date_of_birth: String!
+	profession: String
 }
 
 type User {
 	name: String
 	email: String
-	password: String
-	age: Int
+	date_of_birth: String
 	profession: String
 	id: Int
 }
@@ -22,7 +21,7 @@ type Query {
 
 type Mutation {
 	insertUser( 
-		myUser: UserInput
+		requestData: UserInput
 	): User
 }
 `;

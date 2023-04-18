@@ -1,5 +1,6 @@
 import { AppDataSource } from "./data-source";
-import { User } from "./entities/user";
+import { User } from "./entities/user.entity";
+import { createHash } from "crypto";
 
 const UserRepository = AppDataSource.getRepository(User);
 
@@ -11,7 +12,7 @@ type UserInput = {
   name: string;
   email: string;
   password: string;
-  age: number;
+  date_of_birth: string;
   profession: string;
 };
 
@@ -20,28 +21,34 @@ export const resolvers = {
     users: () => "Hello Taqos!",
   },
   Mutation: {
-    insertUser: async (_, { myUser }: { myUser: UserInput }) => {
+    insertUser: async (_, { requestData }: { requestData: UserInput }) => {
       const existingUser = await UserRepository.findOneBy({
-        email: myUser.email,
+        email: requestData.email,
       });
       if (existingUser) {
         throw new Error(
           "Já existe um usuário cadastrado com este email, favor utilize outro!"
         );
       }
-      if (!isValidPassword(myUser.password)) {
+      if (!isValidPassword(requestData.password)) {
         throw new Error(
-          "A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula e mais de 8 números."
+          "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula, um número."
         );
       }
+      const hash = createHash("sha256")
+        .update(requestData.password)
+        .digest("hex");
       const newUser = new User();
-      newUser.name = myUser.name;
-      newUser.email = myUser.email;
-      newUser.password = myUser.password;
-      newUser.age = myUser.age;
-      newUser.profession = myUser.profession;
-      await UserRepository.save(newUser);
-      return newUser;
+      newUser.name = requestData.name;
+      newUser.email = requestData.email;
+      newUser.password = hash;
+      newUser.date_of_birth = new Date(requestData.date_of_birth);
+      newUser.profession = requestData.profession;
+      const savedUser = await UserRepository.save(newUser);
+      return {
+        ...savedUser,
+        date_of_birth: savedUser.date_of_birth.toISOString(),
+      };
     },
   },
 };
