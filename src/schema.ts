@@ -1,9 +1,9 @@
 export const typeDefs = `
 input UserInput {
-	name: String
-	email: String
-	password: String
-	date_of_birth: String
+	name: String!
+	email: String!
+	password: String!
+	date_of_birth: String!
 	profession: String
 }
 
