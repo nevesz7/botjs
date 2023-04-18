@@ -1,9 +1,8 @@
 import { AppDataSource } from "./data-source";
-import { User } from "./entities/user";
-import { ReturnUser } from "./entities/return-user";
+import { user } from "./entities/user.entity";
 import { createHash } from "crypto";
 
-const UserRepository = AppDataSource.getRepository(User);
+const UserRepository = AppDataSource.getRepository(user);
 
 const isValidPassword = (str) => {
   return /[a-zA-Z\d]{8,}/.test(str);
@@ -13,7 +12,7 @@ type UserInput = {
   name: string;
   email: string;
   password: string;
-  age: number;
+  date_of_birth: string;
   profession: string;
 };
 
@@ -36,24 +35,18 @@ export const resolvers = {
           "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula, um número."
         );
       }
-      if (requestData.age < 18) {
-        throw new Error("Usuários precisam ter 18 anos ou mais.");
-      }
-      const hash = createHash("sha256").update(requestData.password).digest("hex");
-      const newUser = new User();
+      const hash = createHash("sha256")
+        .update(requestData.password)
+        .digest("hex");
+      const newUser = new user();
       newUser.name = requestData.name;
       newUser.email = requestData.email;
       newUser.password = hash;
-      newUser.age = requestData.age;
+      newUser.date_of_birth = new Date(requestData.date_of_birth);
       newUser.profession = requestData.profession;
       await UserRepository.save(newUser);
-      const returnUser = new ReturnUser();
-      returnUser.id = newUser.id;
-      returnUser.name = newUser.name;
-      returnUser.email = newUser.email;
-      returnUser.age = newUser.age;
-      returnUser.profession = newUser.profession;
-      return returnUser;
+      newUser.password = "*******";
+      return newUser;
     },
   },
 };

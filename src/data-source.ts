@@ -1,10 +1,10 @@
 import { DataSource } from "typeorm";
-import { User } from "./entities/user";
+import { user } from "./entities/user.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
   url: "postgres://neves7:arara123@localhost:5432/nevesl-db",
-  entities: [User],
+  entities: [user],
   synchronize: true,
   logging: false,
 });
