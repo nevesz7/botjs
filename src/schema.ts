@@ -10,7 +10,6 @@ input UserInput {
 type User {
 	name: String
 	email: String
-	password: String
 	date_of_birth: String
 	profession: String
 	id: Int

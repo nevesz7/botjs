@@ -44,9 +44,11 @@ export const resolvers = {
       newUser.password = hash;
       newUser.date_of_birth = new Date(requestData.date_of_birth);
       newUser.profession = requestData.profession;
-      await UserRepository.save(newUser);
-      newUser.password = "*******";
-      return newUser;
+      const savedUser = await UserRepository.save(newUser);
+      return {
+        ...savedUser,
+        date_of_birth: savedUser.date_of_birth.toISOString(),
+      };
     },
   },
 };
