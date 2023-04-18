@@ -1,8 +1,8 @@
 import { AppDataSource } from "./data-source";
-import { user } from "./entities/user.entity";
+import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 
-const UserRepository = AppDataSource.getRepository(user);
+const UserRepository = AppDataSource.getRepository(User);
 
 const isValidPassword = (str) => {
   return /[a-zA-Z\d]{8,}/.test(str);
@@ -38,7 +38,7 @@ export const resolvers = {
       const hash = createHash("sha256")
         .update(requestData.password)
         .digest("hex");
-      const newUser = new user();
+      const newUser = new User();
       newUser.name = requestData.name;
       newUser.email = requestData.email;
       newUser.password = hash;
