@@ -1,11 +1,28 @@
 import "mocha";
 import assert = require("assert");
 import axios from "axios";
+import * as dotenv from "dotenv";
 import { expect } from "chai";
-import { start } from "../src/index";
+import { server } from "../src/index";
+import { TestDataSource } from "../src/data-source";
+import { startStandaloneServer } from "@apollo/server/standalone";
+
+dotenv.config();
+
+const startTest = async () => {
+  await initializeTestData();
+  await startStandaloneServer(server, {
+    listen: { port: 4000 },
+  });
+  console.log("Server ready at http://localhost:4000/");
+};
+
+const initializeTestData = async () => {
+  await TestDataSource.initialize();
+};
 
 before(async () => {
-  await start();
+  await startTest();
 });
 
 const body = {

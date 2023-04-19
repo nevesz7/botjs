@@ -8,3 +8,11 @@ export const AppDataSource = new DataSource({
   synchronize: true,
   logging: false,
 });
+
+export const TestDataSource = new DataSource({
+  type: "postgres",
+  url: "postgres://neves7:arara123@test:5432/nevest-db",
+  entities: [User],
+  synchronize: true,
+  logging: false,
+});
