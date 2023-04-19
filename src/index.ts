@@ -5,12 +5,12 @@ import { AppDataSource } from "./data-source";
 import { resolvers } from "./resolvers";
 import { typeDefs } from "./schema";
 
-const server = new ApolloServer({
+export const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
-const start = async () => {
+export const start = async () => {
   await initializeData();
   await startStandaloneServer(server, {
     listen: { port: 4000 },
@@ -18,7 +18,7 @@ const start = async () => {
   console.log("Server ready at http://localhost:4000/");
 };
 
-const initializeData = async () => {
+export const initializeData = async () => {
   await AppDataSource.initialize();
 };
 
