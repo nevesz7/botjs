@@ -2,8 +2,6 @@ import { AppDataSource } from "./data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 
-const UserRepository = AppDataSource.getRepository(User);
-
 const isValidPassword = (str) => {
   return /[a-zA-Z\d]{8,}/.test(str);
 };
@@ -22,6 +20,7 @@ export const resolvers = {
   },
   Mutation: {
     insertUser: async (_, { requestData }: { requestData: UserInput }) => {
+      const UserRepository = AppDataSource.getRepository(User);
       const existingUser = await UserRepository.findOneBy({
         email: requestData.email,
       });

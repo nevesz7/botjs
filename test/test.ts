@@ -1,15 +1,14 @@
 import "mocha";
+import * as dotenv from "dotenv";
 import assert = require("assert");
 import axios from "axios";
-import * as dotenv from "dotenv";
 import { expect } from "chai";
-import { server } from "../src/index";
-import { TestDataSource } from "../src/data-source";
+import { AppDataSource } from "../src/data-source";
+import { server } from "../src/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-dotenv.config();
-
 const startTest = async () => {
+  dotenv.config({ path: "../bot.taq/.test.env" });
   await initializeTestData();
   await startStandaloneServer(server, {
     listen: { port: 4000 },
@@ -18,7 +17,10 @@ const startTest = async () => {
 };
 
 const initializeTestData = async () => {
-  await TestDataSource.initialize();
+  AppDataSource.setOptions({
+    url: process.env.DB_URL,
+  });
+  await AppDataSource.initialize();
 };
 
 before(async () => {
