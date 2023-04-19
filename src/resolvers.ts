@@ -18,7 +18,7 @@ type UserInput = {
 
 export const resolvers = {
   Query: {
-    users: () => "Hello Taqos!",
+    users: () => "Hello, Taqos!",
   },
   Mutation: {
     insertUser: async (_, { requestData }: { requestData: UserInput }) => {

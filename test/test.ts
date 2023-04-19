@@ -1,6 +1,7 @@
 import "mocha";
 import assert = require("assert");
 import axios from "axios";
+import { expect } from "chai";
 import { start } from "../src/index";
 
 before(async () => {
@@ -25,27 +26,22 @@ const getData = async () => {
       body,
       axiosConfig
     );
-    console.log("response:");
-    console.log(response);
     return response;
   } catch (error) {
     if (error.response) {
-      console.log("error1");
       console.log(error.response.data);
       console.log(error.response.status);
       console.log(error.response.headers);
     } else if (error.request) {
-      console.log("error2");
       console.log(error.request);
     } else {
-      console.log("Error3", error.message);
+      console.log(error.message);
     }
   }
 };
 
-console.log("hello");
-
 it("should return true", async () => {
   assert.equal(true, true);
-  await getData();
+  const response = await getData();
+  expect(response.data.data.users).to.be.eq("Hello, Taqos!");
 });
