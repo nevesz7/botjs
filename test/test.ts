@@ -59,8 +59,7 @@ const getData = async () => {
   }
 };
 
-it("should return true", async () => {
-  assert.equal(true, true);
+it("hello query returns what is expected", async () => {
   const response = await getData();
   expect(response.data.data.users).to.be.eq("Hello, Taqos!");
 });
