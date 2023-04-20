@@ -14,13 +14,14 @@ type UserInput = {
   profession: string;
 };
 
+export const UserRepository = AppDataSource.getRepository(User);
+
 export const resolvers = {
   Query: {
     users: () => "Hello, Taqos!",
   },
   Mutation: {
     insertUser: async (_, { requestData }: { requestData: UserInput }) => {
-      const UserRepository = AppDataSource.getRepository(User);
       const existingUser = await UserRepository.findOneBy({
         email: requestData.email,
       });
