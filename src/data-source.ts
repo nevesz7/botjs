@@ -7,3 +7,5 @@ export const AppDataSource = new DataSource({
   synchronize: true,
   logging: false,
 });
+
+export const UserRepository = AppDataSource.getRepository(User);

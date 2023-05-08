@@ -1,21 +1,20 @@
 import "mocha";
 import * as dotenv from "dotenv";
 import axios from "axios";
-import assert = require("assert");
 import { expect } from "chai";
-import { User } from "../src/entities/user.entity";
 import { createHash } from "crypto";
 import { server } from "../src/server";
 import { AppDataSource } from "../src/data-source";
-import { UserRepository } from "../src/resolvers";
+import { UserRepository } from "../src/data-source";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-//insert-prefix
-const profession = "FBI Agent";
-const password = "AliceKrugger7";
-const name = "Jane Doe";
-const email = "janedoe@fbi.gov";
-const date_of_birth = "09/10/1984";
+const input = {
+  profession: "FBI Agent",
+  password: "AliceKrugger7",
+  name: "Jane Doe",
+  email: "janedoe@fbi.gov",
+  date_of_birth: "09/10/1984",
+};
 
 const startTest = async () => {
   dotenv.config({ path: "../bot.taq/.test.env" });
@@ -54,11 +53,11 @@ const mutationBody = {
   }`,
   variables: {
     requestData: {
-      profession: "FBI Agent",
-      password: "AliceKrugger7",
-      name: "Jane Doe",
-      email: "janedoe@fbi.gov",
-      date_of_birth: "09/10/1984",
+      profession: input.profession,
+      password: input.password,
+      name: input.name,
+      email: input.email,
+      date_of_birth: input.date_of_birth,
     },
   },
 };
@@ -111,36 +110,35 @@ const getMutation = async () => {
   }
 };
 
-const testDBUser = new User();
-testDBUser.id = 0;
-testDBUser.name = name;
-testDBUser.email = email;
-testDBUser.password = createHash("sha256").update(password).digest("hex");
-testDBUser.date_of_birth = new Date(date_of_birth);
-testDBUser.profession = profession;
-
-const testReturn = {
+const test = {
   id: 0,
-  name: name,
-  email: email,
-  profession: profession,
-  date_of_birth: testDBUser.date_of_birth.toISOString(),
+  name: input.name,
+  email: input.email,
+  date_of_birth: new Date(input.date_of_birth),
+  profession: input.profession,
 };
 
-//change to multiple tests (3 passing instead of 1 passing)
-it("query and mutation returns match the expected", async () => {
+it("query return match the expected", async () => {
   const queryResponse = await getData();
+  expect(queryResponse.data.data.users).to.be.eq("Hello, Taqos!");
+  console.log("Query users returns the expected!");
+});
+
+it("mutation return matches the expected", async () => {
   const mutationResponse = await getMutation();
   const dbUser = await UserRepository.findOneBy({
     id: mutationResponse.data.id,
   });
-  testDBUser.id = dbUser.id;
-  testReturn.id = dbUser.id;
-  expect(queryResponse.data.data.users).to.be.eq("Hello, Taqos!");
-  console.log("Query users returns the expected!");
-  assert.deepEqual(testDBUser, dbUser);
+  test.id = dbUser.id;
+  expect({
+    ...test,
+    password: createHash("sha256").update(input.password).digest("hex"),
+  }).to.deep.equal(dbUser);
   console.log("Database user matches the expected!");
-  assert.deepEqual(testReturn, mutationResponse.data.data.insertUser);
+  expect({
+    ...test,
+    date_of_birth: test.date_of_birth.toISOString(),
+  }).to.deep.equal(mutationResponse.data.data.insertUser);
   console.log("insertUser mutation returns the expected!");
   UserRepository.delete({ id: dbUser.id });
 });

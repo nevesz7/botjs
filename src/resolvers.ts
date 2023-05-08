@@ -1,4 +1,4 @@
-import { AppDataSource } from "./data-source";
+import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 
@@ -13,8 +13,6 @@ type UserInput = {
   date_of_birth: string;
   profession: string;
 };
-
-export const UserRepository = AppDataSource.getRepository(User);
 
 export const resolvers = {
   Query: {
