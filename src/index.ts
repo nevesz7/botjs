@@ -1,16 +1,11 @@
 import "reflect-metadata";
-import { ApolloServer } from "@apollo/server";
+import * as dotenv from "dotenv";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { AppDataSource } from "./data-source";
-import { resolvers } from "./resolvers";
-import { typeDefs } from "./schema";
+import { server } from "../src/server";
 
-export const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
-
-export const start = async () => {
+const start = async () => {
+  dotenv.config({ path: "../bot.taq/.env" });
   await initializeData();
   await startStandaloneServer(server, {
     listen: { port: 4000 },
@@ -18,7 +13,10 @@ export const start = async () => {
   console.log("Server ready at http://localhost:4000/");
 };
 
-export const initializeData = async () => {
+const initializeData = async () => {
+  AppDataSource.setOptions({
+    url: process.env.DB_URL,
+  });
   await AppDataSource.initialize();
 };
 

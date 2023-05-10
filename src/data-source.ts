@@ -3,8 +3,9 @@ import { User } from "./entities/user.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  url: "postgres://neves7:arara123@localhost:5432/nevesl-db",
   entities: [User],
   synchronize: true,
   logging: false,
 });
+
+export const UserRepository = AppDataSource.getRepository(User);
