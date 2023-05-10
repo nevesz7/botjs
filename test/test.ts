@@ -118,27 +118,27 @@ const test = {
   profession: input.profession,
 };
 
-it("query return match the expected", async () => {
+it("should return true", async () => {
   const queryResponse = await getData();
   expect(queryResponse.data.data.users).to.be.eq("Hello, Taqos!");
-  console.log("Query users returns the expected!");
 });
 
-it("mutation return matches the expected", async () => {
+it("should create and return user successfully", async () => {
   const mutationResponse = await getMutation();
   const dbUser = await UserRepository.findOneBy({
     id: mutationResponse.data.id,
   });
   test.id = dbUser.id;
+
   expect({
     ...test,
     password: createHash("sha256").update(input.password).digest("hex"),
   }).to.deep.equal(dbUser);
-  console.log("Database user matches the expected!");
+
   expect({
     ...test,
     date_of_birth: test.date_of_birth.toISOString(),
   }).to.deep.equal(mutationResponse.data.data.insertUser);
-  console.log("insertUser mutation returns the expected!");
+
   UserRepository.delete({ id: dbUser.id });
 });
