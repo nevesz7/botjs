@@ -1,9 +1,10 @@
 import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
+import { CreateUserError } from "../src/errors";
 
 const isValidPassword = (str) => {
-  return /[a-zA-Z\d]{8,}/.test(str);
+  return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
 };
 
 type UserInput = {
@@ -16,23 +17,32 @@ type UserInput = {
 
 export const resolvers = {
   Query: {
-    users: () => "Hello, Taqos!",
+    users: () => {
+      return "Hello, Taqos!";
+    },
   },
   Mutation: {
     insertUser: async (_, { requestData }: { requestData: UserInput }) => {
       const existingUser = await UserRepository.findOneBy({
         email: requestData.email,
       });
-      if (existingUser) {
-        throw new Error(
-          "Já existe um usuário cadastrado com este email, favor utilize outro!"
-        );
-      }
+
       if (!isValidPassword(requestData.password)) {
-        throw new Error(
-          "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula, um número."
+        throw new CreateUserError(
+          "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula e um número.",
+          400,
+          "A senha não satisfaz a política de senha!"
         );
       }
+
+      if (existingUser) {
+        throw new CreateUserError(
+          "Já existe um usuário cadastrado com este email, favor utilize outro!",
+          409,
+          "Email já existente na base de dados"
+        );
+      }
+
       const hash = createHash("sha256")
         .update(requestData.password)
         .digest("hex");

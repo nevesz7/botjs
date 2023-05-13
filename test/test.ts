@@ -78,13 +78,11 @@ const getData = async () => {
     return response;
   } catch (error) {
     if (error.response) {
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
+      console.log("query error at response");
     } else if (error.request) {
-      console.log(error.request);
+      console.log("query error at request");
     } else {
-      console.log(error.message);
+      console.log("unknown query error");
     }
   }
 };
@@ -99,13 +97,11 @@ const getMutation = async () => {
     return response;
   } catch (error) {
     if (error.response) {
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
+      console.log("mutation error at response");
     } else if (error.request) {
-      console.log(error.request);
+      console.log("mutation error at request");
     } else {
-      console.log(error.message);
+      console.log("unknown mutation error");
     }
   }
 };
@@ -124,12 +120,12 @@ it("should return true", async () => {
 });
 
 it("should create and return user successfully", async () => {
+  UserRepository.clear();
   const mutationResponse = await getMutation();
   const dbUser = await UserRepository.findOneBy({
     id: mutationResponse.data.id,
   });
   test.id = dbUser.id;
-
   expect({
     ...test,
     password: createHash("sha256").update(input.password).digest("hex"),
@@ -139,6 +135,53 @@ it("should create and return user successfully", async () => {
     ...test,
     date_of_birth: test.date_of_birth.toISOString(),
   }).to.deep.equal(mutationResponse.data.data.insertUser);
+});
 
-  UserRepository.delete({ id: dbUser.id });
+// mutationBody.variables.requestData.password = "alice";
+// mutationBody.variables.requestData.email = "alicekrugger@gmail.com";
+// const getMutationError = async () => {
+//   try {
+//     const response = await axios.post(
+//       "http://localhost:4000/",
+//       mutationBody,
+//       axiosConfig
+//     );
+//     return response;
+//   } catch (error) {
+//     if (error.response) {
+//       console.log("mutation error at response");
+//     } else if (error.request) {
+//       console.log("mutation error at request");
+//     } else {
+//       console.log("unknown mutation error");
+//     }
+//   }
+// };
+
+const testError = {
+  passwordError: [
+    {
+      code: 400,
+      message:
+        "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula e um número.",
+      additionalInfo: "A senha não satisfaz a política de senha!",
+    },
+  ],
+
+  emailError: [
+    {
+      code: 409,
+      message:
+        "Já existe um usuário cadastrado com este email, favor utilize outro!",
+      additionalInfo: "Email já existente na base de dados",
+    },
+  ],
+};
+
+it("should handle errors properly", async () => {
+  let mutationResponse = await getMutation();
+  expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
+  mutationBody.variables.requestData.password = "alice";
+  mutationResponse = await getMutation();
+  expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
 });
