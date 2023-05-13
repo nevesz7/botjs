@@ -137,27 +137,6 @@ it("should create and return user successfully", async () => {
   }).to.deep.equal(mutationResponse.data.data.insertUser);
 });
 
-// mutationBody.variables.requestData.password = "alice";
-// mutationBody.variables.requestData.email = "alicekrugger@gmail.com";
-// const getMutationError = async () => {
-//   try {
-//     const response = await axios.post(
-//       "http://localhost:4000/",
-//       mutationBody,
-//       axiosConfig
-//     );
-//     return response;
-//   } catch (error) {
-//     if (error.response) {
-//       console.log("mutation error at response");
-//     } else if (error.request) {
-//       console.log("mutation error at request");
-//     } else {
-//       console.log("unknown mutation error");
-//     }
-//   }
-// };
-
 const testError = {
   passwordError: [
     {
