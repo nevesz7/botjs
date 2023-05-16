@@ -4,17 +4,16 @@ import axios from "axios";
 import { expect } from "chai";
 import { createHash } from "crypto";
 import { server } from "../src/server";
-import { User } from "../src/entities/user.entity";
 import { AppDataSource } from "../src/data-source";
 import { UserRepository } from "../src/data-source";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
 const input = {
   profession: "FBI Agent",
-  password: "AliceKrugger7",
-  name: "Jane Doe",
-  email: "janedoe@fbi.gov",
-  date_of_birth: "09/10/1984",
+  password: "Test1234",
+  name: "test name",
+  email: "test.email@test",
+  date_of_birth: "01/01/2000",
 };
 
 const startTest = async () => {
@@ -32,6 +31,9 @@ const initializeTestData = async () => {
   });
   await AppDataSource.initialize();
 };
+beforeEach(async () => {
+  UserRepository.clear();
+});
 
 before(async () => {
   await startTest();
@@ -88,7 +90,7 @@ const getData = async () => {
   }
 };
 
-const getMutation = async () => {
+const getMutation = async (mutationBody) => {
   try {
     const response = await axios.post(
       "http://localhost:4000/",
@@ -121,8 +123,7 @@ it("should return hello text successfully", async () => {
 });
 
 it("should create and return user successfully", async () => {
-  UserRepository.clear();
-  const mutationResponse = await getMutation();
+  const mutationResponse = await getMutation(mutationBody);
   const dbUser = await UserRepository.findOneBy({
     id: mutationResponse.data.id,
   });
@@ -159,20 +160,14 @@ const testError = {
 };
 
 it("should handle email error properly", async () => {
-  const newUser = new User();
-  newUser.name = "test name";
-  newUser.email = "test.email@test";
-  newUser.password = createHash("sha256").update("Test1234").digest("hex");
-  newUser.date_of_birth = new Date("01/01/2000");
-  newUser.profession = "test profession";
-  await UserRepository.save(newUser);
-  const mutationResponse = await getMutation();
+  await UserRepository.save(input);
+  const mutationResponse = await getMutation(mutationBody);
   expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
 });
 
 it("should handle password error properly", async () => {
-  UserRepository.clear();
-  mutationBody.variables.requestData.password = "alice";
-  const mutationResponse = await getMutation();
+  const mutationBodyCopy = mutationBody;
+  mutationBodyCopy.variables.requestData.password = "alice";
+  const mutationResponse = await getMutation(mutationBodyCopy);
   expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
 });
