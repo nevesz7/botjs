@@ -4,6 +4,7 @@ import axios from "axios";
 import { expect } from "chai";
 import { createHash } from "crypto";
 import { server } from "../src/server";
+import { User } from "../src/entities/user.entity";
 import { AppDataSource } from "../src/data-source";
 import { UserRepository } from "../src/data-source";
 import { startStandaloneServer } from "@apollo/server/standalone";
@@ -114,7 +115,7 @@ const test = {
   profession: input.profession,
 };
 
-it("should return true", async () => {
+it("should return hello text successfully", async () => {
   const queryResponse = await getData();
   expect(queryResponse.data.data.users).to.be.eq("Hello, Taqos!");
 });
@@ -157,10 +158,21 @@ const testError = {
   ],
 };
 
-it("should handle errors properly", async () => {
-  let mutationResponse = await getMutation();
+it("should handle email error properly", async () => {
+  const newUser = new User();
+  newUser.name = "test name";
+  newUser.email = "test.email@test";
+  newUser.password = createHash("sha256").update("Test1234").digest("hex");
+  newUser.date_of_birth = new Date("01/01/2000");
+  newUser.profession = "test profession";
+  await UserRepository.save(newUser);
+  const mutationResponse = await getMutation();
   expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
+});
+
+it("should handle password error properly", async () => {
+  UserRepository.clear();
   mutationBody.variables.requestData.password = "alice";
-  mutationResponse = await getMutation();
+  const mutationResponse = await getMutation();
   expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
 });
