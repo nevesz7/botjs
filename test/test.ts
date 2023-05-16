@@ -8,7 +8,7 @@ import { AppDataSource } from "../src/data-source";
 import { UserRepository } from "../src/data-source";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-const input = {
+let input = {
   profession: "FBI Agent",
   password: "Test1234",
   name: "test name",
@@ -32,7 +32,14 @@ const initializeTestData = async () => {
   await AppDataSource.initialize();
 };
 beforeEach(async () => {
-  UserRepository.clear();
+  await UserRepository.clear();
+  input = {
+    profession: "FBI Agent",
+    password: "Test1234",
+    name: "test name",
+    email: "test.email@test",
+    date_of_birth: "01/01/2000",
+  };
 });
 
 before(async () => {
@@ -44,8 +51,9 @@ const queryBody = {
   variables: {},
 };
 
-const mutationBody = {
-  query: `mutation insertUser($requestData: UserInput) {
+const createMutation = (input) => {
+  const mutationBody = {
+    query: `mutation insertUser($requestData: UserInput) {
 	insertUser(requestData:$requestData) {
 		name
 		profession
@@ -54,15 +62,17 @@ const mutationBody = {
 		date_of_birth
 	}
   }`,
-  variables: {
-    requestData: {
-      profession: input.profession,
-      password: input.password,
-      name: input.name,
-      email: input.email,
-      date_of_birth: input.date_of_birth,
+    variables: {
+      requestData: {
+        profession: input.profession,
+        password: input.password,
+        name: input.name,
+        email: input.email,
+        date_of_birth: input.date_of_birth,
+      },
     },
-  },
+  };
+  return mutationBody;
 };
 
 const axiosConfig = {
@@ -117,12 +127,20 @@ const test = {
   profession: input.profession,
 };
 
+it("should handle password error properly", async () => {
+  input.password = "alice";
+  const mutationBody = createMutation(input);
+  const mutationResponse = await getMutation(mutationBody);
+  expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
+});
+
 it("should return hello text successfully", async () => {
   const queryResponse = await getData();
   expect(queryResponse.data.data.users).to.be.eq("Hello, Taqos!");
 });
 
 it("should create and return user successfully", async () => {
+  const mutationBody = createMutation(input);
   const mutationResponse = await getMutation(mutationBody);
   const dbUser = await UserRepository.findOneBy({
     id: mutationResponse.data.id,
@@ -161,13 +179,7 @@ const testError = {
 
 it("should handle email error properly", async () => {
   await UserRepository.save(input);
+  const mutationBody = createMutation(input);
   const mutationResponse = await getMutation(mutationBody);
   expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
-});
-
-it("should handle password error properly", async () => {
-  const mutationBodyCopy = mutationBody;
-  mutationBodyCopy.variables.requestData.password = "alice";
-  const mutationResponse = await getMutation(mutationBodyCopy);
-  expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
 });
