@@ -15,6 +15,11 @@ type UserInput = {
   profession: string;
 };
 
+type LoginInfo = {
+  email: string;
+  password: string;
+};
+
 export const resolvers = {
   Query: {
     users: () => {
@@ -57,6 +62,37 @@ export const resolvers = {
         ...savedUser,
         date_of_birth: savedUser.date_of_birth.toISOString(),
       };
+    },
+
+    login: async (
+      _,
+      { requestCredentials }: { requestCredentials: LoginInfo }
+    ) => {
+      const existingUser = await UserRepository.findOneBy({
+        email: requestCredentials.email,
+      });
+      if (!existingUser) {
+        throw new Error("Email não encontrado!");
+      }
+      const hash = createHash("sha256")
+        .update(requestCredentials.password)
+        .digest("hex");
+      if (existingUser.password != hash) {
+        throw new Error("Senha inválida!");
+      }
+      const user_date_of_birth = new Date(existingUser.date_of_birth);
+      const data = {
+        login: {
+          user: {
+            profession: existingUser.profession,
+            name: existingUser.name,
+            email: existingUser.email,
+            date_of_birth: user_date_of_birth,
+          },
+          token: "the_token",
+        },
+      };
+      return data;
     },
   },
 };

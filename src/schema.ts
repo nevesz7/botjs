@@ -7,6 +7,11 @@ input UserInput {
 	profession: String
 }
 
+input LoginInfo {
+	email: String!
+	password: String!
+}
+
 type User {
 	name: String
 	email: String
