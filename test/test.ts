@@ -8,12 +8,12 @@ import { AppDataSource } from "../src/data-source";
 import { UserRepository } from "../src/data-source";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-const input = {
+let input = {
   profession: "FBI Agent",
-  password: "AliceKrugger7",
-  name: "Jane Doe",
-  email: "janedoe@fbi.gov",
-  date_of_birth: "09/10/1984",
+  password: "Test1234",
+  name: "test name",
+  email: "test.email@test",
+  date_of_birth: "01/01/2000",
 };
 
 const startTest = async () => {
@@ -31,6 +31,16 @@ const initializeTestData = async () => {
   });
   await AppDataSource.initialize();
 };
+beforeEach(async () => {
+  await UserRepository.clear();
+  input = {
+    profession: "FBI Agent",
+    password: "Test1234",
+    name: "test name",
+    email: "test.email@test",
+    date_of_birth: "01/01/2000",
+  };
+});
 
 before(async () => {
   await startTest();
@@ -41,8 +51,9 @@ const queryBody = {
   variables: {},
 };
 
-const mutationBody = {
-  query: `mutation insertUser($requestData: UserInput) {
+const createMutation = (input) => {
+  const mutationBody = {
+    query: `mutation insertUser($requestData: UserInput) {
 	insertUser(requestData:$requestData) {
 		name
 		profession
@@ -51,15 +62,17 @@ const mutationBody = {
 		date_of_birth
 	}
   }`,
-  variables: {
-    requestData: {
-      profession: input.profession,
-      password: input.password,
-      name: input.name,
-      email: input.email,
-      date_of_birth: input.date_of_birth,
+    variables: {
+      requestData: {
+        profession: input.profession,
+        password: input.password,
+        name: input.name,
+        email: input.email,
+        date_of_birth: input.date_of_birth,
+      },
     },
-  },
+  };
+  return mutationBody;
 };
 
 const axiosConfig = {
@@ -78,18 +91,16 @@ const getData = async () => {
     return response;
   } catch (error) {
     if (error.response) {
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
+      console.log("query error at response");
     } else if (error.request) {
-      console.log(error.request);
+      console.log("query error at request");
     } else {
-      console.log(error.message);
+      console.log("unknown query error");
     }
   }
 };
 
-const getMutation = async () => {
+const getMutation = async (mutationBody) => {
   try {
     const response = await axios.post(
       "http://localhost:4000/",
@@ -99,13 +110,11 @@ const getMutation = async () => {
     return response;
   } catch (error) {
     if (error.response) {
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
+      console.log("mutation error at response");
     } else if (error.request) {
-      console.log(error.request);
+      console.log("mutation error at request");
     } else {
-      console.log(error.message);
+      console.log("unknown mutation error");
     }
   }
 };
@@ -118,14 +127,21 @@ const test = {
   profession: input.profession,
 };
 
-it("query return match the expected", async () => {
-  const queryResponse = await getData();
-  expect(queryResponse.data.data.users).to.be.eq("Hello, Taqos!");
-  console.log("Query users returns the expected!");
+it("should handle password error properly", async () => {
+  input.password = "alice";
+  const mutationBody = createMutation(input);
+  const mutationResponse = await getMutation(mutationBody);
+  expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
 });
 
-it("mutation return matches the expected", async () => {
-  const mutationResponse = await getMutation();
+it("should return hello text successfully", async () => {
+  const queryResponse = await getData();
+  expect(queryResponse.data.data.users).to.be.eq("Hello, Taqos!");
+});
+
+it("should create and return user successfully", async () => {
+  const mutationBody = createMutation(input);
+  const mutationResponse = await getMutation(mutationBody);
   const dbUser = await UserRepository.findOneBy({
     id: mutationResponse.data.id,
   });
@@ -134,11 +150,36 @@ it("mutation return matches the expected", async () => {
     ...test,
     password: createHash("sha256").update(input.password).digest("hex"),
   }).to.deep.equal(dbUser);
-  console.log("Database user matches the expected!");
+
   expect({
     ...test,
     date_of_birth: test.date_of_birth.toISOString(),
   }).to.deep.equal(mutationResponse.data.data.insertUser);
-  console.log("insertUser mutation returns the expected!");
-  UserRepository.delete({ id: dbUser.id });
+});
+
+const testError = {
+  passwordError: [
+    {
+      code: 400,
+      message:
+        "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula e um número.",
+      additionalInfo: "A senha não satisfaz a política de senha!",
+    },
+  ],
+
+  emailError: [
+    {
+      code: 409,
+      message:
+        "Já existe um usuário cadastrado com este email, favor utilize outro!",
+      additionalInfo: "Email já existente na base de dados",
+    },
+  ],
+};
+
+it("should handle email error properly", async () => {
+  await UserRepository.save(input);
+  const mutationBody = createMutation(input);
+  const mutationResponse = await getMutation(mutationBody);
+  expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
 });
