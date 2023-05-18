@@ -47,7 +47,6 @@ export const resolvers = {
           "Email já existente na base de dados"
         );
       }
-
       const hash = createHash("sha256")
         .update(requestData.password)
         .digest("hex");
@@ -72,24 +71,23 @@ export const resolvers = {
         email: requestCredentials.email,
       });
       if (!existingUser) {
-        throw new Error("Email não encontrado!");
+        throw new CustomError(
+          "Email não encontrado na base de dados, tente novamente.",
+          404
+        );
       }
-      console.log(requestCredentials.password);
       const hash = createHash("sha256")
         .update(requestCredentials.password)
         .digest("hex");
-      console.log(hash);
-      console.log(existingUser.password);
       if (existingUser.password != hash) {
-        throw new Error("Senha inválida!");
+        throw new CustomError("Senha inválida!", 403);
       }
-      const user_dateOfBirth = new Date(existingUser.dateOfBirth);
       const data = {
         user: {
           profession: existingUser.profession,
           name: existingUser.name,
           email: existingUser.email,
-          dateOfBirth: user_dateOfBirth,
+          dateOfBirth: existingUser.dateOfBirth.toISOString(),
           id: existingUser.id,
         },
         token: "the_token",

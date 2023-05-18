@@ -115,6 +115,7 @@ it("should create and return user successfully", async () => {
 });
 
 it("should handle email error properly", async () => {
+  input.password = createHash("sha256").update(input.password).digest("hex");
   await UserRepository.save(input);
   const mutationBody = createMutation(input);
   const mutationResponse = await getMutation(mutationBody);
