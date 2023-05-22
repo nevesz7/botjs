@@ -2,6 +2,7 @@ import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
+import { get_token } from "token";
 
 const isValidPassword = (str) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
@@ -65,7 +66,8 @@ export const resolvers = {
 
     login: async (
       _,
-      { requestCredentials }: { requestCredentials: LoginInfo }
+      { requestCredentials }: { requestCredentials: LoginInfo },
+      rememberMe: number
     ) => {
       const existingUser = await UserRepository.findOneBy({
         email: requestCredentials.email,
@@ -90,7 +92,7 @@ export const resolvers = {
           dateOfBirth: existingUser.dateOfBirth.toISOString(),
           id: existingUser.id,
         },
-        token: "the_token",
+        token: get_token(existingUser.id, rememberMe),
       };
       return data;
     },
