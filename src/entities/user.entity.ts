@@ -15,7 +15,7 @@ export class User {
   password: string;
 
   @Column()
-  date_of_birth: Date;
+  dateOfBirth: Date;
 
   @Column()
   profession: string;

@@ -11,8 +11,13 @@ type UserInput = {
   name: string;
   email: string;
   password: string;
-  date_of_birth: string;
+  dateOfBirth: string;
   profession: string;
+};
+
+type LoginInfo = {
+  email: string;
+  password: string;
 };
 
 export const resolvers = {
@@ -42,7 +47,6 @@ export const resolvers = {
           "Email já existente na base de dados"
         );
       }
-
       const hash = createHash("sha256")
         .update(requestData.password)
         .digest("hex");
@@ -50,13 +54,45 @@ export const resolvers = {
       newUser.name = requestData.name;
       newUser.email = requestData.email;
       newUser.password = hash;
-      newUser.date_of_birth = new Date(requestData.date_of_birth);
+      newUser.dateOfBirth = new Date(requestData.dateOfBirth);
       newUser.profession = requestData.profession;
       const savedUser = await UserRepository.save(newUser);
       return {
         ...savedUser,
-        date_of_birth: savedUser.date_of_birth.toISOString(),
+        dateOfBirth: savedUser.dateOfBirth.toISOString(),
       };
+    },
+
+    login: async (
+      _,
+      { requestCredentials }: { requestCredentials: LoginInfo }
+    ) => {
+      const existingUser = await UserRepository.findOneBy({
+        email: requestCredentials.email,
+      });
+      if (!existingUser) {
+        throw new CustomError(
+          "Email não encontrado na base de dados, tente novamente.",
+          404
+        );
+      }
+      const hash = createHash("sha256")
+        .update(requestCredentials.password)
+        .digest("hex");
+      if (existingUser.password != hash) {
+        throw new CustomError("Senha inválida!", 403);
+      }
+      const data = {
+        user: {
+          profession: existingUser.profession,
+          name: existingUser.name,
+          email: existingUser.email,
+          dateOfBirth: existingUser.dateOfBirth.toISOString(),
+          id: existingUser.id,
+        },
+        token: "the_token",
+      };
+      return data;
     },
   },
 };
