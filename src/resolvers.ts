@@ -2,6 +2,7 @@ import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
+import { decode } from "jsonwebtoken";
 import { getToken } from "../src/token";
 
 const isValidPassword = (str) => {
@@ -14,6 +15,11 @@ type UserInput = {
   password: string;
   dateOfBirth: string;
   profession: string;
+};
+
+type Input = {
+  userInput: UserInput;
+  token: string;
 };
 
 type LoginInfo = {
@@ -29,12 +35,13 @@ export const resolvers = {
     },
   },
   Mutation: {
-    insertUser: async (_, { requestData }: { requestData: UserInput }) => {
+    insertUser: async (_, { requestData }: { requestData: Input }) => {
+      console.log(decode(requestData.token));
       const existingUser = await UserRepository.findOneBy({
-        email: requestData.email,
+        email: requestData.userInput.email,
       });
 
-      if (!isValidPassword(requestData.password)) {
+      if (!isValidPassword(requestData.userInput.password)) {
         throw new CustomError(
           "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula e um número.",
           400,
@@ -50,14 +57,14 @@ export const resolvers = {
         );
       }
       const hash = createHash("sha256")
-        .update(requestData.password)
+        .update(requestData.userInput.password)
         .digest("hex");
       const newUser = new User();
-      newUser.name = requestData.name;
-      newUser.email = requestData.email;
+      newUser.name = requestData.userInput.name;
+      newUser.email = requestData.userInput.email;
       newUser.password = hash;
-      newUser.dateOfBirth = new Date(requestData.dateOfBirth);
-      newUser.profession = requestData.profession;
+      newUser.dateOfBirth = new Date(requestData.userInput.dateOfBirth);
+      newUser.profession = requestData.userInput.profession;
       const savedUser = await UserRepository.save(newUser);
       return {
         ...savedUser,

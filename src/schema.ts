@@ -1,4 +1,10 @@
 export const typeDefs = `
+
+input Input {
+	userInput: UserInput!
+	token: String!
+}
+
 input UserInput {
 	name: String!
 	email: String!
@@ -32,7 +38,7 @@ type LoginData {
 
 type Mutation {
 	insertUser( 
-		requestData: UserInput
+		requestData: Input
 	): User
 
 	login(
