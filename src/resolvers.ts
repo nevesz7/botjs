@@ -2,7 +2,7 @@ import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
-import { get_token } from "token";
+import { getToken } from "../src/token";
 
 const isValidPassword = (str) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
@@ -19,6 +19,7 @@ type UserInput = {
 type LoginInfo = {
   email: string;
   password: string;
+  rememberMe: boolean;
 };
 
 export const resolvers = {
@@ -66,8 +67,7 @@ export const resolvers = {
 
     login: async (
       _,
-      { requestCredentials }: { requestCredentials: LoginInfo },
-      rememberMe: number
+      { requestCredentials }: { requestCredentials: LoginInfo }
     ) => {
       const existingUser = await UserRepository.findOneBy({
         email: requestCredentials.email,
@@ -78,21 +78,17 @@ export const resolvers = {
           404
         );
       }
+      const removeProp = "password";
+      const { [removeProp]: password, ...returnableUser } = existingUser;
       const hash = createHash("sha256")
         .update(requestCredentials.password)
         .digest("hex");
-      if (existingUser.password != hash) {
+      if (password != hash) {
         throw new CustomError("Senha inválida!", 403);
       }
       const data = {
-        user: {
-          profession: existingUser.profession,
-          name: existingUser.name,
-          email: existingUser.email,
-          dateOfBirth: existingUser.dateOfBirth.toISOString(),
-          id: existingUser.id,
-        },
-        token: get_token(existingUser.id, rememberMe),
+        user: returnableUser,
+        token: getToken(returnableUser, requestCredentials.rememberMe),
       };
       return data;
     },
