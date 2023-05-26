@@ -2,7 +2,7 @@ import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
-import { decode } from "jsonwebtoken";
+import { verify } from "jsonwebtoken";
 import { getToken } from "../src/token";
 
 const isValidPassword = (str) => {
@@ -36,7 +36,20 @@ export const resolvers = {
   },
   Mutation: {
     insertUser: async (_, { requestData }: { requestData: Input }) => {
-      console.log(decode(requestData.token));
+      try {
+        const test = verify(requestData.token, process.env.SECRET);
+		const dbUser = await UserRepository.findOneBy({
+			email: test.email;
+		})
+		if (dbUser.dateOfBirth != test.dateOfBirth) throw new CustomError("test error", 777);
+		if (dbUser.password != test.password) throw new CustomError("test error", 777);
+		if (dbUser.name != test.name) throw new CustomError("test error", 777);
+		if (dbUser.profession != test.profession) throw new CustomError("test error", 777);
+        console.log(test);
+      } catch (error) {
+        console.log(error.message);
+        throw new CustomError("test error", 777);
+      }
       const existingUser = await UserRepository.findOneBy({
         email: requestData.userInput.email,
       });
@@ -48,7 +61,6 @@ export const resolvers = {
           "A senha não satisfaz a política de senha!"
         );
       }
-
       if (existingUser) {
         throw new CustomError(
           "Já existe um usuário cadastrado com este email, favor utilize outro!",
