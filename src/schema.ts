@@ -24,6 +24,8 @@ type User {
 
 type Query {
 	users: String
+
+	user(id: Number): User
 }
 
 type LoginData {
