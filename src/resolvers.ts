@@ -37,14 +37,14 @@ export const resolvers = {
   Mutation: {
     insertUser: async (_, { requestData }: { requestData: Input }) => {
       try {
-        const test = verify(requestData.token, process.env.SECRET);
-		const dbUser = await UserRepository.findOneBy({
-			email: test.email;
-		})
-		if (dbUser.dateOfBirth != test.dateOfBirth) throw new CustomError("test error", 777);
-		if (dbUser.password != test.password) throw new CustomError("test error", 777);
-		if (dbUser.name != test.name) throw new CustomError("test error", 777);
-		if (dbUser.profession != test.profession) throw new CustomError("test error", 777);
+        const test = verify(requestData.token, process.env.SECRET) as Omit<
+          User,
+          "password"
+        >;
+        const dbUser = await UserRepository.findOneBy({
+          id: test.id,
+        });
+        if (!dbUser) throw new CustomError("test error", 777);
         console.log(test);
       } catch (error) {
         console.log(error.message);
