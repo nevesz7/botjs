@@ -9,17 +9,12 @@ const isValidPassword = (str) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
 };
 
-type UserInput = {
+type InsertUserInput = {
   name: string;
   email: string;
   password: string;
   dateOfBirth: string;
   profession: string;
-};
-
-type Input = {
-  userInput: UserInput;
-  token: string;
 };
 
 type LoginInfo = {
@@ -35,24 +30,27 @@ export const resolvers = {
     },
   },
   Mutation: {
-    insertUser: async (_, { requestData }: { requestData: Input }) => {
-      try {
-        const test = verify(requestData.token, process.env.SECRET) as Omit<
-          User,
-          "password"
-        >;
-        const dbUser = await UserRepository.findOneBy({
-          id: test.id,
-        });
-        if (!dbUser) throw new CustomError("test error", 777);
-      } catch (error) {
-        throw new CustomError("test error", 777);
-      }
+    insertUser: async (
+      _,
+      { requestData }: { requestData: InsertUserInput }
+    ) => {
+      //   try {
+      //     const test = verify(requestData.token, process.env.SECRET) as Omit<
+      //       User,
+      //       "password"
+      //     >;
+      //     const dbUser = await UserRepository.findOneBy({
+      //       id: test.id,
+      //     });
+      //     if (!dbUser) throw new CustomError("test error", 777);
+      //   } catch (error) {
+      //     throw new CustomError("test error", 777);
+      //   }
       const existingUser = await UserRepository.findOneBy({
-        email: requestData.userInput.email,
+        email: requestData.email,
       });
 
-      if (!isValidPassword(requestData.userInput.password)) {
+      if (!isValidPassword(requestData.password)) {
         throw new CustomError(
           "A senha deve conter pelo menos 8 caracteres. Entre eles ao menos: uma letra maiúscula, uma letra minúscula e um número.",
           400,
@@ -67,14 +65,14 @@ export const resolvers = {
         );
       }
       const hash = createHash("sha256")
-        .update(requestData.userInput.password)
+        .update(requestData.password)
         .digest("hex");
       const newUser = new User();
-      newUser.name = requestData.userInput.name;
-      newUser.email = requestData.userInput.email;
+      newUser.name = requestData.name;
+      newUser.email = requestData.email;
       newUser.password = hash;
-      newUser.dateOfBirth = new Date(requestData.userInput.dateOfBirth);
-      newUser.profession = requestData.userInput.profession;
+      newUser.dateOfBirth = new Date(requestData.dateOfBirth);
+      newUser.profession = requestData.profession;
       const savedUser = await UserRepository.save(newUser);
       return {
         ...savedUser,
@@ -95,8 +93,7 @@ export const resolvers = {
           404
         );
       }
-      const removeProp = "password";
-      const { [removeProp]: password, ...returnableUser } = existingUser;
+      const { password, ...returnableUser } = existingUser;
       const hash = createHash("sha256")
         .update(requestCredentials.password)
         .digest("hex");

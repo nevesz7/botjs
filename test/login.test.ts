@@ -1,5 +1,4 @@
 import "mocha";
-import "reflect-metadata";
 import { expect } from "chai";
 import { decode } from "jsonwebtoken";
 import { createHash } from "crypto";
@@ -21,7 +20,15 @@ describe("login test", () => {
     iat: number;
   };
 
-  const input = {
+  type TestUserData = {
+    name: string;
+    password: string;
+    email: string;
+    dateOfBirth: string;
+    profession: string;
+  };
+
+  const testUserData = {
     profession: "test profession",
     password: "Test1234",
     name: "test name",
@@ -29,7 +36,7 @@ describe("login test", () => {
     dateOfBirth: "01/01/2000",
   };
 
-  const createLoginMutation = (input) => {
+  const createLoginMutation = (testUserData: TestUserData) => {
     const loginBody = {
       query: `mutation login($requestCredentials: LoginInfo) {
         login(requestCredentials:$requestCredentials) {
@@ -45,8 +52,8 @@ describe("login test", () => {
     }`,
       variables: {
         requestCredentials: {
-          password: input.password,
-          email: input.email,
+          password: testUserData.password,
+          email: testUserData.email,
           rememberMe: true,
         },
       },
@@ -56,9 +63,9 @@ describe("login test", () => {
 
   const testLoginUser = {
     id: 0,
-    name: input.name,
-    email: input.email,
-    profession: input.profession,
+    name: testUserData.name,
+    email: testUserData.email,
+    profession: testUserData.profession,
     dateOfBirth: new Date(2000, 0, 1).getTime().toString(),
   };
 
@@ -80,14 +87,16 @@ describe("login test", () => {
 
   it("should execute login mutation and return successfully", async () => {
     const dbUser = await UserRepository.save({
-      ...input,
-      password: createHash("sha256").update(input.password).digest("hex"),
-      dateOfBirth: new Date(input.dateOfBirth),
+      ...testUserData,
+      password: createHash("sha256")
+        .update(testUserData.password)
+        .digest("hex"),
+      dateOfBirth: new Date(testUserData.dateOfBirth),
     });
 
     testLoginUser.id = dbUser.id;
-    const mutationBody = createLoginMutation(input);
-    const mutationResponse = await getMutation(mutationBody);
+    const mutationBody = createLoginMutation(testUserData);
+    let mutationResponse = await getMutation(mutationBody);
     expect(mutationResponse.data.data.login.user).to.deep.equal(testLoginUser);
 
     const mutationResponseDecodedToken = decode(
@@ -109,27 +118,34 @@ describe("login test", () => {
       id: dbUser.id,
     };
 
+    expect(mutationResponseTokenInfo).to.deep.equal(testTokenInfo);
     const compareTime = new Date().getTime() / 1000;
     expect(mutationResponseDecodedToken.iat).to.be.closeTo(compareTime, 1);
     expect(mutationResponseDecodedToken.exp).to.be.closeTo(
       compareTime + 604800,
       1
     );
-    expect(mutationResponseTokenInfo).to.deep.equal(testTokenInfo);
+    await UserRepository.clear();
+    mutationBody.variables.requestCredentials.rememberMe = false;
+    mutationResponse = await getMutation(mutationBody);
+    expect(mutationResponseDecodedToken.exp).to.be.closeTo(
+      compareTime + 3600,
+      1
+    );
   });
 
   it("should detect non-existing user and fail the login mutation", async () => {
-    await UserRepository.save(input);
-    input.email = "error@email.com";
-    const mutationBody = createLoginMutation(input);
+    await UserRepository.save(testUserData);
+    testUserData.email = "error@email.com";
+    const mutationBody = createLoginMutation(testUserData);
     const mutationResponse = await getMutation(mutationBody);
     expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
   });
 
   it("should detect wrong password and fail the login mutation", async () => {
-    await UserRepository.save(input);
-    input.password = "TestError";
-    const mutationBody = createLoginMutation(input);
+    await UserRepository.save(testUserData);
+    testUserData.password = "TestError";
+    const mutationBody = createLoginMutation(testUserData);
     const mutationResponse = await getMutation(mutationBody);
     expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
   });
