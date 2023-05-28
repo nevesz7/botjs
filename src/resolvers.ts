@@ -33,11 +33,12 @@ export const resolvers = {
     users: () => {
       return "Hello, Taqos!";
     },
-    user: async (id: number, token: string) => {
-      if (token) {
+    user: async (_, id: number) => {
+      if (requestData.token) {
         const dbUser = await UserRepository.findOneBy({
           id: id,
         });
+        if (id != dbUser.id) throw new CustomError("test error", 777);
         return dbUser;
       }
     },
