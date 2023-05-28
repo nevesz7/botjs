@@ -33,12 +33,13 @@ export const resolvers = {
     users: () => {
       return "Hello, Taqos!";
     },
-    user: async (id: number) => {
-      //authenticated??
-      const dbUser = await UserRepository.findOneBy({
-        id: id,
-      });
-      return dbUser;
+    user: async (id: number, token: string) => {
+      if (token) {
+        const dbUser = await UserRepository.findOneBy({
+          id: id,
+        });
+        return dbUser;
+      }
     },
   },
   Mutation: {
