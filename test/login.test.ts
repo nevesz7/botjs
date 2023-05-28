@@ -1,10 +1,26 @@
 import "mocha";
+import "reflect-metadata";
 import { expect } from "chai";
+import { decode } from "jsonwebtoken";
 import { createHash } from "crypto";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
 
 describe("login test", () => {
+  beforeEach(async () => {
+    await UserRepository.clear();
+  });
+
+  type DecodedTokenInfo = {
+    name: string;
+    email: string;
+    dateOfBirth: string;
+    profession: string;
+    id: number;
+    exp: number;
+    iat: number;
+  };
+
   const input = {
     profession: "test profession",
     password: "Test1234",
@@ -16,40 +32,34 @@ describe("login test", () => {
   const createLoginMutation = (input) => {
     const loginBody = {
       query: `mutation login($requestCredentials: LoginInfo) {
-			  login(requestCredentials:$requestCredentials) {
-				  user {
-					  profession
-					  name
-					  id
-					  dateOfBirth
-					  email
-				  }
-				  token
-			  }
-		  }`,
+        login(requestCredentials:$requestCredentials) {
+          user {
+            profession
+            name
+            id
+            dateOfBirth
+            email
+           }
+           token
+        }
+    }`,
       variables: {
         requestCredentials: {
           password: input.password,
           email: input.email,
+          rememberMe: true,
         },
       },
     };
     return loginBody;
   };
 
-  const test = {
-    data: {
-      login: {
-        user: {
-          id: 0,
-          name: input.name,
-          email: input.email,
-          profession: input.profession,
-          dateOfBirth: new Date(input.dateOfBirth).toISOString(),
-        },
-        token: "the_token",
-      },
-    },
+  const testLoginUser = {
+    id: 0,
+    name: input.name,
+    email: input.email,
+    profession: input.profession,
+    dateOfBirth: new Date(2000, 0, 1).getTime().toString(),
   };
 
   const testError = {
@@ -74,10 +84,38 @@ describe("login test", () => {
       password: createHash("sha256").update(input.password).digest("hex"),
       dateOfBirth: new Date(input.dateOfBirth),
     });
-    test.data.login.user.id = dbUser.id;
+
+    testLoginUser.id = dbUser.id;
     const mutationBody = createLoginMutation(input);
     const mutationResponse = await getMutation(mutationBody);
-    expect(mutationResponse.data).to.deep.equal(test);
+    expect(mutationResponse.data.data.login.user).to.deep.equal(testLoginUser);
+
+    const mutationResponseDecodedToken = decode(
+      mutationResponse.data.data.login.token
+    ) as DecodedTokenInfo;
+    const mutationResponseTokenInfo = {
+      dateOfBirth: new Date(mutationResponseDecodedToken.dateOfBirth),
+      email: mutationResponseDecodedToken.email,
+      name: mutationResponseDecodedToken.name,
+      profession: mutationResponseDecodedToken.profession,
+      id: mutationResponseDecodedToken.id,
+    };
+
+    const testTokenInfo = {
+      dateOfBirth: dbUser.dateOfBirth,
+      email: dbUser.email,
+      name: dbUser.name,
+      profession: dbUser.profession,
+      id: dbUser.id,
+    };
+
+    const compareTime = new Date().getTime() / 1000;
+    expect(mutationResponseDecodedToken.iat).to.be.closeTo(compareTime, 1);
+    expect(mutationResponseDecodedToken.exp).to.be.closeTo(
+      compareTime + 604800,
+      1
+    );
+    expect(mutationResponseTokenInfo).to.deep.equal(testTokenInfo);
   });
 
   it("should detect non-existing user and fail the login mutation", async () => {

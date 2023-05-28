@@ -45,9 +45,7 @@ export const resolvers = {
           id: test.id,
         });
         if (!dbUser) throw new CustomError("test error", 777);
-        console.log(test);
       } catch (error) {
-        console.log(error.message);
         throw new CustomError("test error", 777);
       }
       const existingUser = await UserRepository.findOneBy({

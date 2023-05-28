@@ -1,32 +1,52 @@
 import "mocha";
+import "reflect-metadata";
 import { expect } from "chai";
 import { createHash } from "crypto";
 import { UserRepository } from "../src/data-source";
-import { startTest, getQuery, getMutation } from "./utils";
+import { getQuery, getMutation } from "./utils";
+import { getToken } from "../src/token";
 
 describe("create user test", () => {
   //basic input object for testing
   let input = {
-    profession: "FBI Agent",
-    password: "Test1234",
-    name: "test name",
-    email: "test.email@test",
+    profession: "teste",
+    password: "Teste123",
+    name: "teste1",
+    email: "teste@teste.com",
     dateOfBirth: "01/01/2000",
   };
-
-  //starting server and connecting to test database
-  before(async () => {
-    await startTest();
-  });
+  let token = "";
 
   //deleting users from repository and resetting basic input
   beforeEach(async () => {
     await UserRepository.clear();
     input = {
-      profession: "FBI Agent",
-      password: "Test1234",
-      name: "test name",
-      email: "test.email@test",
+      profession: "teste",
+      password:
+        "ebdf496f67651cddf6aaa1f0b130f1b99ce9e2e93dc2503d926edcff15aee668",
+      name: "teste1",
+      email: "teste@teste.com",
+      dateOfBirth: "01/01/2000",
+    };
+    await UserRepository.save(input);
+
+    const existingUser = await UserRepository.findOneBy({
+      email: "teste@teste.com",
+    });
+    const testUser = {
+      profession: existingUser.profession,
+      name: existingUser.name,
+      dateOfBirth: existingUser.dateOfBirth,
+      email: existingUser.email,
+      id: existingUser.id,
+    };
+    token = getToken(testUser, true);
+
+    input = {
+      profession: "teste2",
+      password: "Teste123",
+      name: "teste2",
+      email: "teste2@teste.com",
       dateOfBirth: "01/01/2000",
     };
   });
@@ -40,7 +60,7 @@ describe("create user test", () => {
   //setting up createUserMutation
   const createMutation = (input) => {
     const mutationBody = {
-      query: `mutation insertUser($requestData: UserInput) {
+      query: `mutation insertUser($requestData: Input) {
 		insertUser(requestData:$requestData) {
 			name
 			profession
@@ -51,11 +71,14 @@ describe("create user test", () => {
 	  }`,
       variables: {
         requestData: {
-          profession: input.profession,
-          password: input.password,
-          name: input.name,
-          email: input.email,
-          dateOfBirth: input.dateOfBirth,
+          userInput: {
+            profession: input.profession,
+            password: input.password,
+            name: input.name,
+            email: input.email,
+            dateOfBirth: input.dateOfBirth,
+          },
+          token: token,
         },
       },
     };
@@ -65,10 +88,10 @@ describe("create user test", () => {
   //object to be used as comparison
   const test = {
     id: 0,
-    name: input.name,
-    email: input.email,
-    dateOfBirth: new Date(input.dateOfBirth),
-    profession: input.profession,
+    profession: "teste2",
+    name: "teste2",
+    email: "teste2@teste.com",
+    dateOfBirth: new Date("01/01/2000"),
   };
 
   //errors to be used as comparison
@@ -101,7 +124,7 @@ describe("create user test", () => {
     const mutationBody = createMutation(input);
     const mutationResponse = await getMutation(mutationBody);
     const dbUser = await UserRepository.findOneBy({
-      id: mutationResponse.data.id,
+      id: mutationResponse.data.data.insertUser.id,
     });
     test.id = dbUser.id;
     expect({
@@ -116,8 +139,7 @@ describe("create user test", () => {
   });
 
   it("should handle email error properly", async () => {
-    input.password = createHash("sha256").update(input.password).digest("hex");
-    await UserRepository.save(input);
+    input.email = "teste@teste.com";
     const mutationBody = createMutation(input);
     const mutationResponse = await getMutation(mutationBody);
     expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
