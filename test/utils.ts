@@ -1,18 +1,8 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { AppDataSource } from "../src/data-source";
-import { server } from "../src/server";
-import { GraphQLError } from "graphql";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import { verify } from "jsonwebtoken";
-import { User } from "entities/user.entity";
-import { CustomError } from "../src/errors";
-
-type UserInterface = {
-  name: string;
-  email: string;
-  id: number;
-};
+import { getContext, server } from "../src/server";
+import { AppDataSource } from "../src/data-source";
 
 const initializeTestData = async () => {
   AppDataSource.setOptions({
@@ -22,33 +12,10 @@ const initializeTestData = async () => {
 };
 
 export const startTest = async () => {
-  dotenv.config({ path: "../bot.taq/.test.env" });
+  dotenv.config({ path: "./.test.env" });
   await initializeTestData();
   await startStandaloneServer(server, {
-    context: async ({ req }) => {
-      const token = req.headers.authorization ?? "";
-      let tokenInfo: UserInterface;
-      if (token === "") return null;
-      try {
-        tokenInfo = verify(token, process.env.SECRET) as User;
-      } catch (error) {
-        throw new GraphQLError("User is not authenticated", {
-          extensions: {
-            code: "UNAUTHENTICATED",
-            status: 401,
-          },
-        });
-      }
-      if (tokenInfo === null)
-        throw new CustomError("Invalid Token!", 401, "random test");
-      const userInterface = {
-        name: tokenInfo.name,
-        email: tokenInfo.email,
-        id: tokenInfo.id,
-      };
-      return userInterface;
-    },
-
+    context: getContext,
     listen: { port: 4000 },
   });
   console.log("Server ready at http://localhost:4000/");

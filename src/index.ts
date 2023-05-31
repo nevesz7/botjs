@@ -2,49 +2,13 @@ import "reflect-metadata";
 import * as dotenv from "dotenv";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { AppDataSource } from "./data-source";
-import { verify } from "jsonwebtoken";
-import { server } from "../src/server";
-import { User } from "entities/user.entity";
-import { GraphQLError } from "graphql";
-import { CustomError } from "../src/errors";
-
-type UserInterface = {
-  id: number;
-};
-
-dotenv.config({ path: "./.env" });
-export const secret = process.env.SECRET;
+import { getContext, server } from "../src/server";
 
 const start = async () => {
   dotenv.config({ path: "./.env" });
   await initializeData();
   await startStandaloneServer(server, {
-    context: async ({ req }) => {
-      const token = req.headers.authorization ?? "";
-      if (token === "") {
-        return null;
-      }
-
-      let tokenInfo: UserInterface;
-      try {
-        tokenInfo = verify(token, process.env.SECRET) as User;
-      } catch (error) {
-        throw new GraphQLError("User is not authenticated", {
-          extensions: {
-            code: "UNAUTHENTICATED",
-            status: 401,
-          },
-        });
-      }
-      if (tokenInfo === null) {
-        throw new CustomError("Invalid Token!", 401);
-      }
-
-      return {
-        id: tokenInfo.id,
-      };
-    },
-
+    context: getContext,
     listen: { port: 4000 },
   });
   console.log("Server ready at http://localhost:4000/");
