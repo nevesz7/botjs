@@ -4,7 +4,7 @@
    "description": "- Free Taq.os - Learning project of bot programming, part of Institute Taqtile selective proccess - [Environment and tools - to be filled] - [Steps to run and debug - to be filled]",
    "main": "index.ts",
    "dependencies": {
-      "@apollo/server": "^4.6.0",
+      "@apollo/server": "^4.7.1",
       "axios": "^1.3.5",
       "dotenv": "^16.0.3",
       "jsonwebtoken": "^9.0.0",

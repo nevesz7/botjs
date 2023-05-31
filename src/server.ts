@@ -54,6 +54,7 @@ export const server = new ApolloServer<UserInterface>({
   resolvers,
   formatError: (formattedError, error) => {
     const userError = unwrapResolverError(error);
+
     if (userError instanceof CustomError) {
       return { ...userError, message: userError.message };
     }

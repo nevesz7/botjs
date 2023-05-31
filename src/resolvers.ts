@@ -3,6 +3,7 @@ import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
+import { SimpleConsoleLogger } from "typeorm";
 
 const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
@@ -33,18 +34,19 @@ export const resolvers = {
     users: () => {
       return "Hello, Taqos!";
     },
-    user: async (_, id: number, ctx: UserInterface) => {
-      console.log(ctx);
+    user: async (_, { id }: { id: number }, ctx: UserInterface) => {
+      console.log(typeof id);
       if (ctx === null) {
         throw new CustomError("Invalid Token", 401);
       }
-      const dbUser = await UserRepository.findOneBy({
-        id: ctx.id,
-      });
-      if (!dbUser) throw new CustomError("User not found", 400);
+      const dbUser = await UserRepository.findOne({ where: { id } });
+      if (!dbUser) {
+        throw new CustomError("User not found", 400);
+      }
       return dbUser;
     },
   },
+
   Mutation: {
     insertUser: async (
       _,

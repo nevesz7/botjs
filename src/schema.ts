@@ -25,7 +25,7 @@ type User {
 type Query {
 	users: String
 
-	user(id: Int, token: String): User
+	user(id: Int): User
 }
 
 type LoginData {
