@@ -2,11 +2,16 @@ import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
-import { verify } from "jsonwebtoken";
 import { getToken } from "../src/token";
 
 const isValidPassword = (str) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
+};
+
+type UserInterface = {
+  name: string;
+  email: string;
+  id: number;
 };
 
 type InsertUserInput = {
@@ -32,22 +37,14 @@ export const resolvers = {
   Mutation: {
     insertUser: async (
       _,
-      { requestData }: { requestData: InsertUserInput }
+      { requestData }: { requestData: InsertUserInput },
+      ctx: UserInterface
     ) => {
-      //   try {
-      //     const test = verify(requestData.token, process.env.SECRET) as Omit<
-      //       User,
-      //       "password"
-      //     >;
-      //     const dbUser = await UserRepository.findOneBy({
-      //       id: test.id,
-      //     });
-      //     if (!dbUser) throw new CustomError("test error", 777);
-      //   } catch (error) {
-      //     throw new CustomError("test error", 777);
-      //   }
-      const existingUser = await UserRepository.findOneBy({
-        email: requestData.email,
+      if (ctx === null) {
+        throw new CustomError("Unauthenticated", 401);
+      }
+      const existingUser = await UserRepository.findOne({
+        where: { email: requestData.email },
       });
 
       if (!isValidPassword(requestData.password)) {

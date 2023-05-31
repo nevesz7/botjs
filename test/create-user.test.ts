@@ -3,7 +3,6 @@ import { expect } from "chai";
 import { createHash } from "crypto";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
-import { getToken } from "../src/token";
 
 describe("create user test", () => {
   type MutationInput = {
@@ -16,7 +15,6 @@ describe("create user test", () => {
 
   //basic input object for testing
   let mutationInput: MutationInput;
-  let token: string;
 
   //deleting users from repository and resetting basic input
   beforeEach(async () => {
@@ -31,18 +29,6 @@ describe("create user test", () => {
     };
     await UserRepository.save(mutationInput);
 
-    const existingUser = await UserRepository.findOneBy({
-      email: "teste@teste.com",
-    });
-    const testUser = {
-      profession: existingUser.profession,
-      name: existingUser.name,
-      dateOfBirth: existingUser.dateOfBirth,
-      email: existingUser.email,
-      id: existingUser.id,
-    };
-    token = getToken(testUser, true);
-
     mutationInput = {
       profession: "teste2",
       password: "Teste123",
@@ -55,7 +41,7 @@ describe("create user test", () => {
   //setting up createUserMutation
   const createMutation = (mutationInput: MutationInput) => {
     const mutationBody = {
-      query: `mutation insertUser($requestData: Input) {
+      query: `mutation insertUser($requestData: CreateUserInput) {
 		insertUser(requestData:$requestData) {
 			name
 			profession
@@ -65,10 +51,7 @@ describe("create user test", () => {
 		}
 	  }`,
       variables: {
-        requestData: {
-          userInput: mutationInput,
-          token: token,
-        },
+        requestData: mutationInput,
       },
     };
     return mutationBody;

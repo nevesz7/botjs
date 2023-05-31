@@ -96,7 +96,7 @@ describe("login test", () => {
 
     testLoginUser.id = dbUser.id;
     const mutationBody = createLoginMutation(testUserData);
-    let mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(mutationBody);
     expect(mutationResponse.data.data.login.user).to.deep.equal(testLoginUser);
 
     const mutationResponseDecodedToken = decode(
@@ -125,9 +125,27 @@ describe("login test", () => {
       compareTime + 604800,
       1
     );
-    await UserRepository.clear();
+  });
+
+  it("should execute login mutation and return correct token with rememberMe as false", async () => {
+    const dbUser = await UserRepository.save({
+      ...testUserData,
+      password: createHash("sha256")
+        .update(testUserData.password)
+        .digest("hex"),
+      dateOfBirth: new Date(testUserData.dateOfBirth),
+    });
+
+    testLoginUser.id = dbUser.id;
+    const mutationBody = createLoginMutation(testUserData);
     mutationBody.variables.requestCredentials.rememberMe = false;
-    mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(mutationBody);
+
+    const mutationResponseDecodedToken = decode(
+      mutationResponse.data.data.login.token
+    ) as DecodedTokenInfo;
+
+    const compareTime = new Date().getTime() / 1000;
     expect(mutationResponseDecodedToken.exp).to.be.closeTo(
       compareTime + 3600,
       1
