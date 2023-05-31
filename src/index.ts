@@ -20,8 +20,11 @@ const start = async () => {
   await startStandaloneServer(server, {
     context: async ({ req }) => {
       const token = req.headers.authorization ?? "";
+      if (token === "") {
+        return null;
+      }
+      
       let tokenInfo: UserInterface;
-      if (token === "") return null;
       try {
         tokenInfo = verify(token, process.env.SECRET) as User;
       } catch (error) {
@@ -32,14 +35,15 @@ const start = async () => {
           },
         });
       }
-      if (tokenInfo === null)
+      if (tokenInfo === null) {
         throw new CustomError("Invalid Token!", 401, "random test");
-      const userInterface = {
+      }
+      
+      return {
         name: tokenInfo.name,
         email: tokenInfo.email,
         id: tokenInfo.id,
-      };
-      return userInterface;
+      }
     },
 
     listen: { port: 4000 },
