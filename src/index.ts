@@ -9,13 +9,14 @@ import { GraphQLError } from "graphql";
 import { CustomError } from "../src/errors";
 
 type UserInterface = {
-  name: string;
-  email: string;
   id: number;
 };
 
+dotenv.config({ path: "./.env" });
+export const secret = process.env.SECRET;
+
 const start = async () => {
-  dotenv.config({ path: "../bot.taq/.env" });
+  dotenv.config({ path: "./.env" });
   await initializeData();
   await startStandaloneServer(server, {
     context: async ({ req }) => {
@@ -23,7 +24,7 @@ const start = async () => {
       if (token === "") {
         return null;
       }
-      
+
       let tokenInfo: UserInterface;
       try {
         tokenInfo = verify(token, process.env.SECRET) as User;
@@ -36,14 +37,12 @@ const start = async () => {
         });
       }
       if (tokenInfo === null) {
-        throw new CustomError("Invalid Token!", 401, "random test");
+        throw new CustomError("Invalid Token!", 401);
       }
-      
+
       return {
-        name: tokenInfo.name,
-        email: tokenInfo.email,
         id: tokenInfo.id,
-      }
+      };
     },
 
     listen: { port: 4000 },

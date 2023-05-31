@@ -6,8 +6,6 @@ import { CustomError } from "./errors";
 import { GraphQLError } from "graphql";
 
 type UserInterface = {
-  name: string;
-  email: string;
   id: number;
 };
 
@@ -22,13 +20,10 @@ export const server = new ApolloServer<UserInterface>({
     }
 
     if (userError instanceof GraphQLError) {
-      console.log("==========");
-      console.log(userError);
-      const customError = {
+      return {
         message: userError.message,
         code: userError.extensions.status,
       };
-      return customError;
     }
 
     return formattedError;
