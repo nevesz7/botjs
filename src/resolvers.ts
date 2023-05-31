@@ -18,7 +18,7 @@ type InsertUserInput = {
   name: string;
   email: string;
   password: string;
-  dateOfBirth: string;
+  dateOfBirth: Date;
   profession: string;
 };
 
@@ -33,14 +33,16 @@ export const resolvers = {
     users: () => {
       return "Hello, Taqos!";
     },
-    user: async (_, id: number) => {
-      if (requestData.token) {
-        const dbUser = await UserRepository.findOneBy({
-          id: id,
-        });
-        if (id != dbUser.id) throw new CustomError("test error", 777);
-        return dbUser;
+    user: async (_, id: number, ctx: UserInterface) => {
+      console.log(ctx);
+      if (ctx === null) {
+        throw new CustomError("Invalid Token", 401);
       }
+      const dbUser = await UserRepository.findOneBy({
+        id: ctx.id,
+      });
+      if (!dbUser) throw new CustomError("User not found", 400);
+      return dbUser;
     },
   },
   Mutation: {
