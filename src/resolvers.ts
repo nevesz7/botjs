@@ -2,12 +2,19 @@ import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
+import { getToken } from "../src/token";
 
-const isValidPassword = (str) => {
+const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
 };
 
-type UserInput = {
+type UserInterface = {
+  name: string;
+  email: string;
+  id: number;
+};
+
+type InsertUserInput = {
   name: string;
   email: string;
   password: string;
@@ -18,6 +25,7 @@ type UserInput = {
 type LoginInfo = {
   email: string;
   password: string;
+  rememberMe: boolean;
 };
 
 export const resolvers = {
@@ -27,9 +35,16 @@ export const resolvers = {
     },
   },
   Mutation: {
-    insertUser: async (_, { requestData }: { requestData: UserInput }) => {
-      const existingUser = await UserRepository.findOneBy({
-        email: requestData.email,
+    insertUser: async (
+      _,
+      { requestData }: { requestData: InsertUserInput },
+      ctx: UserInterface
+    ) => {
+      if (ctx === null) {
+        throw new CustomError("Unauthenticated", 401);
+      }
+      const existingUser = await UserRepository.findOne({
+        where: { email: requestData.email },
       });
 
       if (!isValidPassword(requestData.password)) {
@@ -39,7 +54,6 @@ export const resolvers = {
           "A senha não satisfaz a política de senha!"
         );
       }
-
       if (existingUser) {
         throw new CustomError(
           "Já existe um usuário cadastrado com este email, favor utilize outro!",
@@ -67,8 +81,8 @@ export const resolvers = {
       _,
       { requestCredentials }: { requestCredentials: LoginInfo }
     ) => {
-      const existingUser = await UserRepository.findOneBy({
-        email: requestCredentials.email,
+      const existingUser = await UserRepository.findOne({
+        where: { email: requestCredentials.email },
       });
       if (!existingUser) {
         throw new CustomError(
@@ -76,21 +90,16 @@ export const resolvers = {
           404
         );
       }
+      const { password, ...returnableUser } = existingUser;
       const hash = createHash("sha256")
         .update(requestCredentials.password)
         .digest("hex");
-      if (existingUser.password != hash) {
+      if (password != hash) {
         throw new CustomError("Senha inválida!", 403);
       }
       const data = {
-        user: {
-          profession: existingUser.profession,
-          name: existingUser.name,
-          email: existingUser.email,
-          dateOfBirth: existingUser.dateOfBirth.toISOString(),
-          id: existingUser.id,
-        },
-        token: "the_token",
+        user: returnableUser,
+        token: getToken(returnableUser, requestCredentials.rememberMe),
       };
       return data;
     },

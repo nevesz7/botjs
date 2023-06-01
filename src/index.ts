@@ -2,12 +2,13 @@ import "reflect-metadata";
 import * as dotenv from "dotenv";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { AppDataSource } from "./data-source";
-import { server } from "../src/server";
+import { getContext, server } from "../src/server";
 
 const start = async () => {
-  dotenv.config({ path: "../bot.taq/.env" });
+  dotenv.config({ path: "./.env" });
   await initializeData();
   await startStandaloneServer(server, {
+    context: getContext,
     listen: { port: 4000 },
   });
   console.log("Server ready at http://localhost:4000/");

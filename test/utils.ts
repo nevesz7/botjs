@@ -1,8 +1,8 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { AppDataSource } from "../src/data-source";
-import { server } from "../src/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
+import { getContext, server } from "../src/server";
+import { AppDataSource } from "../src/data-source";
 
 const initializeTestData = async () => {
   AppDataSource.setOptions({
@@ -12,9 +12,10 @@ const initializeTestData = async () => {
 };
 
 export const startTest = async () => {
-  dotenv.config({ path: "../bot.taq/.test.env" });
+  dotenv.config({ path: "./.test.env" });
   await initializeTestData();
   await startStandaloneServer(server, {
+    context: getContext,
     listen: { port: 4000 },
   });
   console.log("Server ready at http://localhost:4000/");
@@ -26,12 +27,18 @@ export const axiosConfig = {
   },
 };
 
-export const getQuery = async (queryBody) => {
+export const getQuery = async (queryBody, token: string) => {
+  const axiosQueryConfig = {
+    headers: {
+      ...axiosConfig.headers,
+      Authorization: token,
+    },
+  };
   try {
     const response = await axios.post(
       "http://localhost:4000/",
       queryBody,
-      axiosConfig
+      axiosQueryConfig
     );
     return response;
   } catch (error) {
@@ -45,17 +52,23 @@ export const getQuery = async (queryBody) => {
   }
 };
 
-export const getMutation = async (mutationBody) => {
+export const getMutation = async (mutationBody, token: string) => {
+  const axiosMutationConfig = {
+    headers: {
+      ...axiosConfig.headers,
+      Authorization: token,
+    },
+  };
   try {
     const response = await axios.post(
       "http://localhost:4000/",
       mutationBody,
-      axiosConfig
+      axiosMutationConfig
     );
     return response;
   } catch (error) {
     if (error.response) {
-      console.log("mutation error at response");
+      return error.response;
     } else if (error.request) {
       console.log("mutation error at request");
     } else {
