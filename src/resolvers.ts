@@ -3,7 +3,6 @@ import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
-import { SimpleConsoleLogger } from "typeorm";
 
 const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
@@ -31,9 +30,6 @@ type LoginInfo = {
 
 export const resolvers = {
   Query: {
-    users: () => {
-      return "Hello, Taqos!";
-    },
     user: async (_, { id }: { id: number }, ctx: UserInterface) => {
       console.log(typeof id);
       if (ctx === null) {

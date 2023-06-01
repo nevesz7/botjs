@@ -114,7 +114,7 @@ describe("create user test", () => {
     }).to.deep.equal(mutationResponse.data.data.insertUser);
   });
 
-  it.only("should fail the mutation due to not being authorized", async () => {
+  it("should fail the mutation due to not being authorized", async () => {
     const mutationBody = createMutation(mutationInput);
     const mutationResponse = await getMutation(mutationBody, "invalid-token");
     const testErrorArray = [
