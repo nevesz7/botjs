@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { createHash } from "crypto";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
+import { getToken } from "../src/token";
 
 describe("create user test", () => {
   type MutationInput = {
@@ -88,10 +89,16 @@ describe("create user test", () => {
   };
 
   it("should create and return user successfully", async () => {
+    let dbUser = await UserRepository.findOne({
+      where: { email: "teste@teste.com" },
+    });
     const mutationBody = createMutation(mutationInput);
-    const mutationResponse = await getMutation(mutationBody);
-    const dbUser = await UserRepository.findOneBy({
-      id: mutationResponse.data.data.insertUser.id,
+    const mutationResponse = await getMutation(
+      mutationBody,
+      getToken(dbUser, true)
+    );
+    dbUser = await UserRepository.findOne({
+      where: { id: mutationResponse.data.data.insertUser.id },
     });
     test.id = dbUser.id;
     expect({
@@ -107,17 +114,41 @@ describe("create user test", () => {
     }).to.deep.equal(mutationResponse.data.data.insertUser);
   });
 
+  it.only("should fail the mutation due to not being authorized", async () => {
+    const mutationBody = createMutation(mutationInput);
+    const mutationResponse = await getMutation(mutationBody, "invalid-token");
+    const testErrorArray = [
+      {
+        message: "User is not authenticated",
+        code: 401,
+      },
+    ];
+    expect(mutationResponse.data.errors).to.deep.equal(testErrorArray);
+  });
+
   it("should throw error if user with email already exists", async () => {
     mutationInput.email = "teste@teste.com";
+    const dbUser = await UserRepository.findOne({
+      where: { email: "teste@teste.com" },
+    });
     const mutationBody = createMutation(mutationInput);
-    const mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(
+      mutationBody,
+      getToken(dbUser, true)
+    );
     expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
   });
 
   it("should throw error if password doesn't follow password rules", async () => {
     mutationInput.password = "test";
+    const dbUser = await UserRepository.findOne({
+      where: { email: "teste@teste.com" },
+    });
     const mutationBody = createMutation(mutationInput);
-    const mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(
+      mutationBody,
+      getToken(dbUser, true)
+    );
     expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
   });
 });

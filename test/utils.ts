@@ -27,12 +27,11 @@ export const axiosConfig = {
   },
 };
 
-export const getQuery = async (queryBody) => {
+export const getQuery = async (queryBody, token: string) => {
   const axiosQueryConfig = {
     headers: {
       ...axiosConfig.headers,
-      Authorization:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6InRlc3RlMSIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tIiwiZGF0ZU9mQmlydGgiOiIyMDAwLTAxLTAxVDAyOjAwOjAwLjAwMFoiLCJwcm9mZXNzaW9uIjoidGVzdGUiLCJpYXQiOjE2ODU1NDc0NzAsImV4cCI6MTY4NjE1MjI3MH0.ukOSOphTCH7Cs-XeSPTAuzE8acREJB0mEPeMpl9w1dc",
+      Authorization: token,
     },
   };
   try {
@@ -53,12 +52,11 @@ export const getQuery = async (queryBody) => {
   }
 };
 
-export const getMutation = async (mutationBody) => {
+export const getMutation = async (mutationBody, token: string) => {
   const axiosMutationConfig = {
     headers: {
       ...axiosConfig.headers,
-      Authorization:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6InRlc3RlMSIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tIiwiZGF0ZU9mQmlydGgiOiIyMDAwLTAxLTAxVDAyOjAwOjAwLjAwMFoiLCJwcm9mZXNzaW9uIjoidGVzdGUiLCJpYXQiOjE2ODU1NDc0NzAsImV4cCI6MTY4NjE1MjI3MH0.ukOSOphTCH7Cs-XeSPTAuzE8acREJB0mEPeMpl9w1dc",
+      Authorization: token,
     },
   };
   try {
@@ -70,7 +68,7 @@ export const getMutation = async (mutationBody) => {
     return response;
   } catch (error) {
     if (error.response) {
-      console.log("mutation error at response");
+      return error.response;
     } else if (error.request) {
       console.log("mutation error at request");
     } else {

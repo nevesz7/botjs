@@ -4,7 +4,7 @@ import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
 
-const isValidPassword = (str) => {
+const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
 };
 
@@ -81,8 +81,8 @@ export const resolvers = {
       _,
       { requestCredentials }: { requestCredentials: LoginInfo }
     ) => {
-      const existingUser = await UserRepository.findOneBy({
-        email: requestCredentials.email,
+      const existingUser = await UserRepository.findOne({
+        where: { email: requestCredentials.email },
       });
       if (!existingUser) {
         throw new CustomError(

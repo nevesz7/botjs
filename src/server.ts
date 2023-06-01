@@ -5,6 +5,7 @@ import { resolvers } from "./resolvers";
 import { CustomError } from "./errors";
 import { GraphQLError } from "graphql";
 import { verify } from "jsonwebtoken";
+import { UserRepository } from "../src/data-source";
 import { User } from "../src/entities/user.entity";
 
 type UserInterface = {
@@ -28,8 +29,19 @@ export const getContext = async ({ req }) => {
       },
     });
   }
-  if (tokenInfo === null) {
-    throw new CustomError("Invalid Token!", 401);
+  let dbUser;
+  if (tokenInfo.id) {
+    dbUser = await UserRepository.findOne({
+      where: { id: tokenInfo.id },
+    });
+  }
+  if (tokenInfo === null || !dbUser) {
+    throw new GraphQLError("User is not authenticated", {
+      extensions: {
+        code: "UNAUTHENTICATED",
+        status: 401,
+      },
+    });
   }
 
   return {
@@ -42,7 +54,6 @@ export const server = new ApolloServer<UserInterface>({
   resolvers,
   formatError: (formattedError, error) => {
     const userError = unwrapResolverError(error);
-
     if (userError instanceof CustomError) {
       return { ...userError, message: userError.message };
     }

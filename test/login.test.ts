@@ -4,6 +4,7 @@ import { decode } from "jsonwebtoken";
 import { createHash } from "crypto";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
+import { getToken } from "../src/token";
 
 describe("login test", () => {
   beforeEach(async () => {
@@ -96,7 +97,10 @@ describe("login test", () => {
 
     testLoginUser.id = dbUser.id;
     const mutationBody = createLoginMutation(testUserData);
-    const mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(
+      mutationBody,
+      getToken(testLoginUser, true)
+    );
     expect(mutationResponse.data.data.login.user).to.deep.equal(testLoginUser);
 
     const mutationResponseDecodedToken = decode(
@@ -139,7 +143,10 @@ describe("login test", () => {
     testLoginUser.id = dbUser.id;
     const mutationBody = createLoginMutation(testUserData);
     mutationBody.variables.requestCredentials.rememberMe = false;
-    const mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(
+      mutationBody,
+      getToken(testLoginUser, true)
+    );
 
     const mutationResponseDecodedToken = decode(
       mutationResponse.data.data.login.token
@@ -156,7 +163,10 @@ describe("login test", () => {
     await UserRepository.save(testUserData);
     testUserData.email = "error@email.com";
     const mutationBody = createLoginMutation(testUserData);
-    const mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(
+      mutationBody,
+      getToken(testUserData, true)
+    );
     expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
   });
 
@@ -164,7 +174,10 @@ describe("login test", () => {
     await UserRepository.save(testUserData);
     testUserData.password = "TestError";
     const mutationBody = createLoginMutation(testUserData);
-    const mutationResponse = await getMutation(mutationBody);
+    const mutationResponse = await getMutation(
+      mutationBody,
+      getToken(testUserData, true)
+    );
     expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
   });
 });
