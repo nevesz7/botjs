@@ -6,7 +6,7 @@ import { getMutation } from "./utils";
 import { getToken } from "../src/token";
 
 describe("create user test", () => {
-  type MutationInput = {
+  type UserInput = {
     profession: string;
     password: string;
     name: string;
@@ -15,7 +15,7 @@ describe("create user test", () => {
   };
 
   //basic input object for testing
-  let mutationInput: MutationInput;
+  let mutationInput: UserInput;
 
   //deleting users from repository and resetting basic input
   beforeEach(async () => {
@@ -40,9 +40,9 @@ describe("create user test", () => {
   });
 
   //setting up createUserMutation
-  const createMutation = (mutationInput: MutationInput) => {
+  const createInsertUserMutation = (mutationInput: UserInput) => {
     const mutationBody = {
-      query: `mutation insertUser($requestData: CreateUserInput) {
+      query: `mutation insertUser($requestData: UserInput) {
 		insertUser(requestData:$requestData) {
 			name
 			profession
@@ -92,7 +92,7 @@ describe("create user test", () => {
     let dbUser = await UserRepository.findOne({
       where: { email: "teste@teste.com" },
     });
-    const mutationBody = createMutation(mutationInput);
+    const mutationBody = createInsertUserMutation(mutationInput);
     const mutationResponse = await getMutation(
       mutationBody,
       getToken(dbUser, true)
@@ -115,7 +115,7 @@ describe("create user test", () => {
   });
 
   it("should fail the mutation due to not being authorized", async () => {
-    const mutationBody = createMutation(mutationInput);
+    const mutationBody = createInsertUserMutation(mutationInput);
     const mutationResponse = await getMutation(mutationBody, "invalid-token");
     const testErrorArray = [
       {
@@ -131,7 +131,7 @@ describe("create user test", () => {
     const dbUser = await UserRepository.findOne({
       where: { email: "teste@teste.com" },
     });
-    const mutationBody = createMutation(mutationInput);
+    const mutationBody = createInsertUserMutation(mutationInput);
     const mutationResponse = await getMutation(
       mutationBody,
       getToken(dbUser, true)
@@ -144,7 +144,7 @@ describe("create user test", () => {
     const dbUser = await UserRepository.findOne({
       where: { email: "teste@teste.com" },
     });
-    const mutationBody = createMutation(mutationInput);
+    const mutationBody = createInsertUserMutation(mutationInput);
     const mutationResponse = await getMutation(
       mutationBody,
       getToken(dbUser, true)

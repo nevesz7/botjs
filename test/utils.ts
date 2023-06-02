@@ -43,7 +43,7 @@ export const getQuery = async (queryBody, token: string) => {
     return response;
   } catch (error) {
     if (error.response) {
-      console.log("query error at response");
+      return error.response;
     } else if (error.request) {
       console.log("query error at request");
     } else {
