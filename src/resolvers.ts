@@ -3,6 +3,7 @@ import { User } from "./entities/user.entity";
 import { createHash } from "crypto";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
+import { UserInput } from "../src/types";
 
 const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
@@ -14,14 +15,6 @@ type UserInterface = {
   id: number;
 };
 
-type InsertUserInput = {
-  name: string;
-  email: string;
-  password: string;
-  dateOfBirth: string;
-  profession: string;
-};
-
 type LoginInfo = {
   email: string;
   password: string;
@@ -30,14 +23,22 @@ type LoginInfo = {
 
 export const resolvers = {
   Query: {
-    users: () => {
-      return "Hello, Taqos!";
+    user: async (_, { id }: { id: number }, ctx: UserInterface) => {
+      if (ctx === null) {
+        throw new CustomError("Invalid Token", 401);
+      }
+      const dbUser = await UserRepository.findOne({ where: { id } });
+      if (!dbUser) {
+        throw new CustomError("User not found", 400);
+      }
+      return dbUser;
     },
   },
+
   Mutation: {
     insertUser: async (
       _,
-      { requestData }: { requestData: InsertUserInput },
+      { requestData }: { requestData: UserInput },
       ctx: UserInterface
     ) => {
       if (ctx === null) {

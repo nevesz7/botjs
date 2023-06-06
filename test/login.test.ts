@@ -5,6 +5,7 @@ import { createHash } from "crypto";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
 import { getToken } from "../src/token";
+import { UserPayload, UserInput } from "../src/types";
 
 describe("login test", () => {
   beforeEach(async () => {
@@ -21,15 +22,7 @@ describe("login test", () => {
     iat: number;
   };
 
-  type TestUserData = {
-    name: string;
-    password: string;
-    email: string;
-    dateOfBirth: string;
-    profession: string;
-  };
-
-  const testUserData = {
+  const testUserData: UserInput = {
     profession: "test profession",
     password: "Test1234",
     name: "test name",
@@ -37,7 +30,7 @@ describe("login test", () => {
     dateOfBirth: "01/01/2000",
   };
 
-  const createLoginMutation = (testUserData: TestUserData) => {
+  const createLoginMutation = (testUserData: UserInput) => {
     const loginBody = {
       query: `mutation login($requestCredentials: LoginInfo) {
         login(requestCredentials:$requestCredentials) {
@@ -62,12 +55,12 @@ describe("login test", () => {
     return loginBody;
   };
 
-  const testLoginUser = {
+  const testLoginUser: UserPayload = {
     id: 0,
     name: testUserData.name,
     email: testUserData.email,
     profession: testUserData.profession,
-    dateOfBirth: new Date(2000, 0, 1).getTime().toString(),
+    dateOfBirth: new Date(2000, 0, 1),
   };
 
   const testError = {
@@ -96,12 +89,16 @@ describe("login test", () => {
     });
 
     testLoginUser.id = dbUser.id;
+    testLoginUser.dateOfBirth = new Date(testLoginUser.dateOfBirth);
     const mutationBody = createLoginMutation(testUserData);
     const mutationResponse = await getMutation(
       mutationBody,
       getToken(testLoginUser, true)
     );
-    expect(mutationResponse.data.data.login.user).to.deep.equal(testLoginUser);
+    expect(mutationResponse.data.data.login.user).to.deep.equal({
+      ...testLoginUser,
+      dateOfBirth: new Date(testLoginUser.dateOfBirth).getTime().toString(),
+    });
 
     const mutationResponseDecodedToken = decode(
       mutationResponse.data.data.login.token
@@ -161,22 +158,28 @@ describe("login test", () => {
 
   it("should detect non-existing user and fail the login mutation", async () => {
     await UserRepository.save(testUserData);
+    const dbUser = await UserRepository.findOne({
+      where: { email: testUserData.email },
+    });
     testUserData.email = "error@email.com";
     const mutationBody = createLoginMutation(testUserData);
     const mutationResponse = await getMutation(
       mutationBody,
-      getToken(testUserData, true)
+      getToken(dbUser, true)
     );
     expect(mutationResponse.data.errors).to.deep.equal(testError.emailError);
   });
 
   it("should detect wrong password and fail the login mutation", async () => {
     await UserRepository.save(testUserData);
+    const dbUser = await UserRepository.findOne({
+      where: { email: testUserData.email },
+    });
     testUserData.password = "TestError";
     const mutationBody = createLoginMutation(testUserData);
     const mutationResponse = await getMutation(
       mutationBody,
-      getToken(testUserData, true)
+      getToken(dbUser, true)
     );
     expect(mutationResponse.data.errors).to.deep.equal(testError.passwordError);
   });

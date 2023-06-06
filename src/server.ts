@@ -8,7 +8,7 @@ import { verify } from "jsonwebtoken";
 import { UserRepository } from "../src/data-source";
 import { User } from "../src/entities/user.entity";
 
-type UserInterface = {
+type UserID = {
   id: number;
 };
 
@@ -18,7 +18,7 @@ export const getContext = async ({ req }) => {
     return null;
   }
 
-  let tokenInfo: UserInterface;
+  let tokenInfo: UserID;
   try {
     tokenInfo = verify(token, process.env.SECRET) as User;
   } catch (error) {
@@ -49,11 +49,12 @@ export const getContext = async ({ req }) => {
   };
 };
 
-export const server = new ApolloServer<UserInterface>({
+export const server = new ApolloServer<UserID>({
   typeDefs,
   resolvers,
   formatError: (formattedError, error) => {
     const userError = unwrapResolverError(error);
+
     if (userError instanceof CustomError) {
       return { ...userError, message: userError.message };
     }

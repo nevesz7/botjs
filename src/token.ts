@@ -1,6 +1,14 @@
 import { sign } from "jsonwebtoken";
 
-export const getToken = (user, rememberMe: boolean) => {
+type UserPayload = {
+  name: string;
+  id: number;
+  email: string;
+  profession: string;
+  dateOfBirth: Date;
+};
+
+export const getToken = (user: UserPayload, rememberMe: boolean) => {
   let token: string;
   const secret = process.env.SECRET;
   const payload = {
