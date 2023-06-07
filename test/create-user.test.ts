@@ -140,7 +140,7 @@ describe("create user test", () => {
   });
 
   it("should throw error if password doesn't follow password rules", async () => {
-    mutationInput.password = "test";
+    mutationInput.password = "testTEST";
     const dbUser = await UserRepository.findOne({
       where: { email: "teste@teste.com" },
     });

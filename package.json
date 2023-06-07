@@ -30,6 +30,7 @@
    "scripts": {
       "compile": "tsc",
       "start": "ts-node src/index.ts",
+	  "seeds": "ts-node src/faker.ts",
       "test": "mocha",
       "typeorm": "typeorm-ts-node-commonjs"
    },
