@@ -4,7 +4,7 @@ import { UserRepository } from "../src/data-source";
 import { UserInput, UserPayload } from "../src/types";
 import { getToken } from "../src/token";
 import { getQuery } from "./utils";
-import { createHash } from "crypto";
+import { generateHash } from "../src/utils";
 
 describe("user query test", () => {
   const testUserData: UserInput = {
@@ -21,9 +21,7 @@ describe("user query test", () => {
     await UserRepository.clear();
     await UserRepository.save({
       ...testUserData,
-      password: createHash("sha256")
-        .update(testUserData.password)
-        .digest("hex"),
+      password: generateHash(testUserData.password),
       dateOfBirth: new Date(testUserData.dateOfBirth),
     });
   });

@@ -1,6 +1,6 @@
 import { UserRepository } from "../src/data-source";
 import { User } from "./entities/user.entity";
-import { createHash } from "crypto";
+import { generateHash } from "./utils";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
 import { UserInput } from "../src/types";
@@ -62,9 +62,7 @@ export const resolvers = {
           "Email já existente na base de dados"
         );
       }
-      const hash = createHash("sha256")
-        .update(requestData.password)
-        .digest("hex");
+      const hash = generateHash(requestData.password);
       const newUser = new User();
       newUser.name = requestData.name;
       newUser.email = requestData.email;
@@ -92,9 +90,7 @@ export const resolvers = {
         );
       }
       const { password, ...returnableUser } = existingUser;
-      const hash = createHash("sha256")
-        .update(requestCredentials.password)
-        .digest("hex");
+      const hash = generateHash(requestCredentials.password);
       if (password != hash) {
         throw new CustomError("Senha inválida!", 403);
       }
