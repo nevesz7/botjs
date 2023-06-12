@@ -24,6 +24,7 @@ type User {
 
 type Query {
 	user(id: Int): User
+	users(amount: Int): [User]
 }
 
 type LoginData {

@@ -7,6 +7,7 @@ import { GraphQLError } from "graphql";
 import { verify } from "jsonwebtoken";
 import { UserRepository } from "../src/data-source";
 import { User } from "../src/entities/user.entity";
+import { UserPayload } from "types";
 
 type UserID = {
   id: number;
@@ -29,7 +30,7 @@ export const getContext = async ({ req }) => {
       },
     });
   }
-  let dbUser;
+  let dbUser: UserPayload;
   if (tokenInfo.id) {
     dbUser = await UserRepository.findOne({
       where: { id: tokenInfo.id },

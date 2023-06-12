@@ -3,15 +3,13 @@ import { User } from "./entities/user.entity";
 import { generateHash } from "./utils";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
-import { UserInput } from "../src/types";
+import { UserInput, UserPayload } from "../src/types";
 
 const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
 };
 
-type UserInterface = {
-  name: string;
-  email: string;
+type UserID = {
   id: number;
 };
 
@@ -23,9 +21,9 @@ type LoginInfo = {
 
 export const resolvers = {
   Query: {
-    user: async (_, { id }: { id: number }, ctx: UserInterface) => {
-      if (ctx === null) {
-        throw new CustomError("Invalid Token", 401);
+    user: async (_, { id }: { id: number }, ctx: UserID) => {
+      if (ctx === null || ctx.id === undefined) {
+        throw new CustomError("Unauthenticated", 401);
       }
       const dbUser = await UserRepository.findOne({ where: { id } });
       if (!dbUser) {
@@ -33,15 +31,35 @@ export const resolvers = {
       }
       return dbUser;
     },
+
+    users: async (_, { amount }: { amount: number }, ctx: UserID) => {
+      if (ctx === null || ctx.id === undefined) {
+        throw new CustomError("Unauthenticated", 401);
+      }
+      if (amount === undefined) {
+        amount = 10;
+      }
+      if (amount <= 0) {
+        throw new CustomError("Amount of users must be greater than 0", 422);
+      }
+      const userArray: UserPayload[] = await UserRepository.find({
+        order: {
+          name: "ASC",
+        },
+        skip: 0,
+        take: amount,
+      });
+      return userArray;
+    },
   },
 
   Mutation: {
     insertUser: async (
       _,
       { requestData }: { requestData: UserInput },
-      ctx: UserInterface
+      ctx: UserID
     ) => {
-      if (ctx === null) {
+      if (ctx === null || ctx.id === undefined) {
         throw new CustomError("Unauthenticated", 401);
       }
       const existingUser = await UserRepository.findOne({
