@@ -13,3 +13,11 @@ export type UserPayload = {
   profession: string;
   dateOfBirth: Date;
 };
+
+export type DatabaseUser = {
+  name: string;
+  email: string;
+  password: string;
+  dateOfBirth: Date;
+  profession: string;
+};

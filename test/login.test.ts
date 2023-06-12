@@ -1,7 +1,7 @@
 import "mocha";
 import { expect } from "chai";
 import { decode } from "jsonwebtoken";
-import { createHash } from "crypto";
+import { generateHash } from "../src/utils";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
 import { getToken } from "../src/token";
@@ -82,9 +82,7 @@ describe("login test", () => {
   it("should execute login mutation and return successfully", async () => {
     const dbUser = await UserRepository.save({
       ...testUserData,
-      password: createHash("sha256")
-        .update(testUserData.password)
-        .digest("hex"),
+      password: generateHash(testUserData.password),
       dateOfBirth: new Date(testUserData.dateOfBirth),
     });
 
@@ -131,9 +129,7 @@ describe("login test", () => {
   it("should execute login mutation and return correct token with rememberMe as false", async () => {
     const dbUser = await UserRepository.save({
       ...testUserData,
-      password: createHash("sha256")
-        .update(testUserData.password)
-        .digest("hex"),
+      password: generateHash(testUserData.password),
       dateOfBirth: new Date(testUserData.dateOfBirth),
     });
 

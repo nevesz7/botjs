@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import { createHash } from "crypto";
+import { generateHash } from "../src/utils";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
 import { getToken } from "../src/token";
@@ -103,9 +103,7 @@ describe("create user test", () => {
     test.id = dbUser.id;
     expect({
       ...test,
-      password: createHash("sha256")
-        .update(mutationInput.password)
-        .digest("hex"),
+      password: generateHash(mutationInput.password),
     }).to.deep.equal(dbUser);
 
     expect({
@@ -140,7 +138,7 @@ describe("create user test", () => {
   });
 
   it("should throw error if password doesn't follow password rules", async () => {
-    mutationInput.password = "test";
+    mutationInput.password = "testTEST";
     const dbUser = await UserRepository.findOne({
       where: { email: "teste@teste.com" },
     });
