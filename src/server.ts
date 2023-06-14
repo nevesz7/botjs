@@ -7,8 +7,9 @@ import { GraphQLError } from "graphql";
 import { verify } from "jsonwebtoken";
 import { UserRepository } from "../src/data-source";
 import { User } from "../src/entities/user.entity";
+import { UserPayload } from "types";
 
-type UserID = {
+type GraphQLContext = {
   id: number;
 };
 
@@ -18,7 +19,7 @@ export const getContext = async ({ req }) => {
     return null;
   }
 
-  let tokenInfo: UserID;
+  let tokenInfo: GraphQLContext;
   try {
     tokenInfo = verify(token, process.env.SECRET) as User;
   } catch (error) {
@@ -29,7 +30,7 @@ export const getContext = async ({ req }) => {
       },
     });
   }
-  let dbUser;
+  let dbUser: UserPayload;
   if (tokenInfo.id) {
     dbUser = await UserRepository.findOne({
       where: { id: tokenInfo.id },
@@ -49,7 +50,7 @@ export const getContext = async ({ req }) => {
   };
 };
 
-export const server = new ApolloServer<UserID>({
+export const server = new ApolloServer<GraphQLContext>({
   typeDefs,
   resolvers,
   formatError: (formattedError, error) => {
