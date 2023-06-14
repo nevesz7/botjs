@@ -22,7 +22,7 @@ type LoginInfo = {
 export const resolvers = {
   Query: {
     user: async (_, { id }: { id: number }, ctx: GraphQLContext) => {
-      if (!ctx || !ctx.id) {
+      if (!ctx?.id) {
         throw new CustomError("Unauthenticated", 401);
       }
       const dbUser = await UserRepository.findOne({ where: { id } });
@@ -37,7 +37,7 @@ export const resolvers = {
       { amount = 10 }: { amount?: number },
       ctx?: GraphQLContext
     ) => {
-      if (!ctx || !ctx.id) {
+      if (!ctx?.id) {
         throw new CustomError("Unauthenticated", 401);
       }
       if (amount <= 0) {
@@ -65,7 +65,7 @@ export const resolvers = {
       { requestData }: { requestData: UserInput },
       ctx: GraphQLContext
     ) => {
-      if (!ctx || !ctx.id) {
+      if (!ctx?.id) {
         throw new CustomError("Unauthenticated", 401);
       }
       const existingUser = await UserRepository.findOne({
