@@ -9,7 +9,7 @@ const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
 };
 
-type UserID = {
+type GraphQLContext = {
   id: number;
 };
 
@@ -21,8 +21,8 @@ type LoginInfo = {
 
 export const resolvers = {
   Query: {
-    user: async (_, { id }: { id: number }, ctx: UserID) => {
-      if (ctx === null || ctx.id === undefined) {
+    user: async (_, { id }: { id: number }, ctx: GraphQLContext) => {
+      if (!ctx || !ctx.id) {
         throw new CustomError("Unauthenticated", 401);
       }
       const dbUser = await UserRepository.findOne({ where: { id } });
@@ -32,16 +32,18 @@ export const resolvers = {
       return dbUser;
     },
 
-    users: async (_, { amount }: { amount: number }, ctx: UserID) => {
-      if (ctx === null || ctx.id === undefined) {
+    users: async (
+      _,
+      { amount = 10 }: { amount?: number },
+      ctx?: GraphQLContext
+    ) => {
+      if (!ctx || !ctx.id) {
         throw new CustomError("Unauthenticated", 401);
       }
-      if (amount === undefined) {
-        amount = 10;
-      }
       if (amount <= 0) {
-        throw new CustomError("Amount of users must be greater than 0", 422);
+        throw new CustomError("Amount of users must be greater than 0", 400);
       }
+
       const userArray: UserPayload[] = await UserRepository.find({
         order: {
           name: "ASC",
@@ -49,7 +51,11 @@ export const resolvers = {
         skip: 0,
         take: amount,
       });
-      return userArray;
+
+      return userArray.map((userArray) => ({
+        ...userArray,
+        dateOfBirth: userArray.dateOfBirth.toISOString(),
+      }));
     },
   },
 
@@ -57,9 +63,9 @@ export const resolvers = {
     insertUser: async (
       _,
       { requestData }: { requestData: UserInput },
-      ctx: UserID
+      ctx: GraphQLContext
     ) => {
-      if (ctx === null || ctx.id === undefined) {
+      if (!ctx || !ctx.id) {
         throw new CustomError("Unauthenticated", 401);
       }
       const existingUser = await UserRepository.findOne({
