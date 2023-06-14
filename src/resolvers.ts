@@ -44,7 +44,7 @@ export const resolvers = {
         throw new CustomError("Amount of users must be greater than 0", 400);
       }
 
-      const userArray: UserPayload[] = await UserRepository.find({
+      const users: UserPayload[] = await UserRepository.find({
         order: {
           name: "ASC",
         },
@@ -52,9 +52,9 @@ export const resolvers = {
         take: amount,
       });
 
-      return userArray.map((userArray) => ({
-        ...userArray,
-        dateOfBirth: userArray.dateOfBirth.toISOString(),
+      return users.map((users) => ({
+        ...users,
+        dateOfBirth: users.dateOfBirth.toISOString(),
       }));
     },
   },
