@@ -14,6 +14,13 @@ input LoginInfo {
 	rememberMe: Boolean!
 }
 
+type Page {
+	users: [User]
+	numberOfUsers: Int
+	numberOfPages: Int
+	currentPage: Int
+}
+
 type User {
 	name: String
 	email: String
@@ -24,7 +31,7 @@ type User {
 
 type Query {
 	user(id: Int): User
-	users(amount: Int): [User]
+	users(amount: Int, usersToSkip: Int): Page
 }
 
 type LoginData {
