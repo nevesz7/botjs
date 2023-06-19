@@ -1,24 +1,10 @@
 import "reflect-metadata";
-import * as dotenv from "dotenv";
 import { faker } from "@faker-js/faker";
-import { generateHash } from "./utils";
-import { DatabaseUser } from "./types";
-import { AppDataSource } from "./data-source";
-import { UserRepository } from "./data-source";
+import { generateHash } from "../src/utils";
+import { DatabaseUser } from "../src/types";
+import { UserRepository } from "../src/data-source";
 
-const startDB = async () => {
-  dotenv.config({ path: "./.env" });
-  await initializeData();
-};
-
-const initializeData = async () => {
-  AppDataSource.setOptions({
-    url: process.env.DB_URL,
-  });
-  await AppDataSource.initialize();
-};
-
-const fillDatabase = async (numberOfUsers: number) => {
+export const fillDatabase = async (numberOfUsers: number) => {
   const userArray: DatabaseUser[] = [];
   for (let counter = 0; counter < numberOfUsers; counter++) {
     userArray.push(generateRandomUser());
@@ -42,10 +28,3 @@ const generateRandomUser = () => {
   };
   return newUser;
 };
-
-const fill = async (amount: number) => {
-  await startDB();
-  fillDatabase(amount);
-};
-
-fill(100);
