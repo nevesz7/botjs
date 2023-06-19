@@ -64,15 +64,16 @@ export const resolvers = {
         );
       }
 
-      const users: [UserPayload[], number] = await UserRepository.findAndCount({
-        order: {
-          name: "ASC",
-        },
-        skip: usersToSkip,
-        take: amount,
-      });
+      const [users, userCount]: [UserPayload[], number] =
+        await UserRepository.findAndCount({
+          order: {
+            name: "ASC",
+          },
+          skip: usersToSkip,
+          take: amount,
+        });
 
-      if (usersToSkip + amount > users[1]) {
+      if (usersToSkip + amount > userCount) {
         throw new CustomError(
           `The sum of users per page and skipped users cannot be greater than total number of users. Total number of users: ${users[1]}`,
           400
@@ -80,13 +81,13 @@ export const resolvers = {
       }
       const pagesBefore = Math.ceil(usersToSkip / amount);
       const page: Page = {
-        users: users[0].map((users) => ({
+        users: users.map((users) => ({
           ...users,
           dateOfBirth: users.dateOfBirth.toISOString(),
         })),
-        numberOfUsers: users[1],
+        numberOfUsers: userCount,
         numberOfPages:
-          pagesBefore + Math.ceil((users[1] - usersToSkip) / amount),
+          pagesBefore + Math.ceil((userCount - usersToSkip) / amount),
         currentPage: pagesBefore + 1,
       };
       return page;
