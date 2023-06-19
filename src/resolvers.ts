@@ -19,6 +19,21 @@ type LoginInfo = {
   rememberMe: boolean;
 };
 
+type PagedUser = {
+  name: string;
+  email: string;
+  dateOfBirth: string;
+  profession: string;
+  id: number;
+};
+
+type Page = {
+  users: PagedUser[];
+  numberOfUsers: number;
+  numberOfPages: number;
+  currentPage: number;
+};
+
 export const resolvers = {
   Query: {
     user: async (_, { id }: { id: number }, ctx: GraphQLContext) => {
@@ -34,7 +49,10 @@ export const resolvers = {
 
     users: async (
       _,
-      { amount = 10 }: { amount?: number },
+      {
+        amount = 10,
+        usersToSkip = 0,
+      }: { amount?: number; usersToSkip?: number },
       ctx?: GraphQLContext
     ) => {
       if (!ctx?.id) {
@@ -44,18 +62,27 @@ export const resolvers = {
         throw new CustomError("Amount of users must be greater than 0", 400);
       }
 
-      const users: UserPayload[] = await UserRepository.find({
+      const users: [UserPayload[], number] = await UserRepository.findAndCount({
         order: {
           name: "ASC",
         },
-        skip: 0,
+        skip: usersToSkip,
         take: amount,
       });
 
-      return users.map((users) => ({
-        ...users,
-        dateOfBirth: users.dateOfBirth.toISOString(),
-      }));
+      console.log(users[0]);
+      const pagesBefore = Math.ceil(usersToSkip / amount);
+      const page: Page = {
+        users: users[0].map((users) => ({
+          ...users,
+          dateOfBirth: users.dateOfBirth.toISOString(),
+        })),
+        numberOfUsers: users[1],
+        numberOfPages:
+          pagesBefore + Math.ceil((users[1] - usersToSkip) / amount),
+        currentPage: pagesBefore + 1,
+      };
+      return page;
     },
   },
 
