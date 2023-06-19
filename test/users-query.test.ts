@@ -93,12 +93,12 @@ describe("users query test", () => {
       take: 10,
     });
 
-    const testPagedUsers: PagedUser[] = testUsers.map((users) => ({
-      ...users,
-      dateOfBirth: users.dateOfBirth.toISOString(),
-    }));
-    testPagedUsers.forEach((user) => {
+    const testPagedUsers: PagedUser[] = testUsers.map((user) => {
       delete user["password"];
+      return {
+        ...user,
+        dateOfBirth: user.dateOfBirth.toISOString(),
+      };
     });
 
     const testData = {
@@ -118,11 +118,13 @@ describe("users query test", () => {
     const dbUser = await UserRepository.findOne({
       where: { email: "test@test.com" },
     });
-    const queryBody = createUsersQuery(50, 3);
-    const queryResponse = await getQuery(queryBody, getToken(dbUser, true));
+    let queryBody = createUsersQuery(50, 3);
+    let queryResponse = await getQuery(queryBody, getToken(dbUser, true));
     expect(queryResponse.data.errors).to.deep.equal(
       testError.AmountSkipSumError
     );
+    queryBody = createUsersQuery(3, 50);
+    queryResponse = await getQuery(queryBody, getToken(dbUser, true));
   });
 
   it("should throw error of negative amount of skipped users", async () => {
