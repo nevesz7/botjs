@@ -90,7 +90,7 @@ describe("user query test", () => {
     );
   });
 
-  it("should fail the query due to not being authorized", async () => {
+  it("should fail the query due to not being authenticated", async () => {
     const queryBody = createUserQuery(0);
     const queryResponse = await getQuery(queryBody, "invalid token");
     expect(queryResponse.data.errors).to.deep.equal(testError.authError);

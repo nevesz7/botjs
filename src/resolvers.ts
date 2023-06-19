@@ -75,7 +75,7 @@ export const resolvers = {
 
       if (usersToSkip + amount > userCount) {
         throw new CustomError(
-          `The sum of users per page and skipped users cannot be greater than total number of users. Total number of users: ${users[1]}`,
+          `The sum of users per page and skipped users cannot be greater than total number of users. Total number of users: ${userCount}`,
           400
         );
       }

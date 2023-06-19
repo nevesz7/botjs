@@ -4,7 +4,7 @@ import { UserRepository } from "../src/data-source";
 import { UserInput, UserPayload, PagedUser } from "../src/types";
 import { getToken } from "../src/token";
 import { getQuery } from "./utils";
-import { fillDatabase } from "./faker-test";
+import { fillDatabase } from "../src/utils";
 import { generateHash } from "../src/utils";
 
 describe("users query test", () => {
@@ -79,7 +79,7 @@ describe("users query test", () => {
     return queryBody;
   };
 
-  it("should return the correct array of users", async () => {
+  it("should return the correct pagination", async () => {
     await fillDatabase(42);
     const dbUser = await UserRepository.findOne({
       where: { email: "test@test.com" },
@@ -101,39 +101,16 @@ describe("users query test", () => {
       delete user["password"];
     });
 
-    const queryBody = createUsersQuery(10, 3);
-    const queryResponse = await getQuery(queryBody, getToken(dbUser, true));
-    expect(queryResponse.data.data.users.users).to.deep.equal(testPagedUsers);
-  });
+    const testData = {
+      users: testPagedUsers,
+      numberOfUsers: 43,
+      numberOfPages: 5,
+      currentPage: 2,
+    };
 
-  it("should return the correct amount of total users", async () => {
-    await fillDatabase(42);
-    const dbUser = await UserRepository.findOne({
-      where: { email: "test@test.com" },
-    });
     const queryBody = createUsersQuery(10, 3);
     const queryResponse = await getQuery(queryBody, getToken(dbUser, true));
-    expect(queryResponse.data.data.users.numberOfUsers).to.equal(43);
-  });
-
-  it("should return the correct amount of pages", async () => {
-    await fillDatabase(42);
-    const dbUser = await UserRepository.findOne({
-      where: { email: "test@test.com" },
-    });
-    const queryBody = createUsersQuery(10, 3);
-    const queryResponse = await getQuery(queryBody, getToken(dbUser, true));
-    expect(queryResponse.data.data.users.numberOfPages).to.equal(5);
-  });
-
-  it("should return the correct number for current page", async () => {
-    await fillDatabase(42);
-    const dbUser = await UserRepository.findOne({
-      where: { email: "test@test.com" },
-    });
-    const queryBody = createUsersQuery(10, 3);
-    const queryResponse = await getQuery(queryBody, getToken(dbUser, true));
-    expect(queryResponse.data.data.users.currentPage).to.equal(2);
+    expect(queryResponse.data.data.users).to.deep.equal(testData);
   });
 
   it("should throw error of sum of amount and skipped users greater than total users on database", async () => {
@@ -169,7 +146,7 @@ describe("users query test", () => {
       testError.negativeAmountError
     );
 
-    it("should fail the query due to not being authorized", async () => {
+    it("should fail the query due to not being authenticated", async () => {
       const queryBody = createUsersQuery(10, 3);
       const queryResponse = await getQuery(queryBody, "invalid token");
       expect(queryResponse.data.errors).to.deep.equal(testError.authError);
