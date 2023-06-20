@@ -125,6 +125,9 @@ describe("users query test", () => {
     );
     queryBody = createUsersQuery(3, 50);
     queryResponse = await getQuery(queryBody, getToken(dbUser, true));
+    expect(queryResponse.data.errors).to.deep.equal(
+      testError.AmountSkipSumError
+    );
   });
 
   it("should throw error of negative amount of skipped users", async () => {
