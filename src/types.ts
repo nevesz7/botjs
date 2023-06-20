@@ -21,3 +21,11 @@ export type DatabaseUser = {
   dateOfBirth: Date;
   profession: string;
 };
+
+export type PagedUser = {
+  name: string;
+  email: string;
+  dateOfBirth: string;
+  profession: string;
+  id: number;
+};

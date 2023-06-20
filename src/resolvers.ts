@@ -3,7 +3,7 @@ import { User } from "./entities/user.entity";
 import { generateHash } from "./utils";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
-import { UserInput, UserPayload } from "../src/types";
+import { UserInput, UserPayload, PagedUser } from "../src/types";
 
 const isValidPassword = (str: string) => {
   return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}/.test(str);
@@ -17,14 +17,6 @@ type LoginInfo = {
   email: string;
   password: string;
   rememberMe: boolean;
-};
-
-type PagedUser = {
-  name: string;
-  email: string;
-  dateOfBirth: string;
-  profession: string;
-  id: number;
 };
 
 type Page = {
@@ -58,28 +50,44 @@ export const resolvers = {
       if (!ctx?.id) {
         throw new CustomError("Unauthenticated", 401);
       }
-      if (amount <= 0) {
-        throw new CustomError("Amount of users must be greater than 0", 400);
+      if (amount < 0) {
+        throw new CustomError(
+          "Amount of users must be greater or equal to 0",
+          400
+        );
       }
 
-      const users: [UserPayload[], number] = await UserRepository.findAndCount({
-        order: {
-          name: "ASC",
-        },
-        skip: usersToSkip,
-        take: amount,
-      });
+      if (usersToSkip < 0) {
+        throw new CustomError(
+          "Amount of skipped users must be greater or equal to 0",
+          400
+        );
+      }
 
-      console.log(users[0]);
+      const [users, userCount]: [UserPayload[], number] =
+        await UserRepository.findAndCount({
+          order: {
+            name: "ASC",
+          },
+          skip: usersToSkip,
+          take: amount,
+        });
+
+      if (usersToSkip + amount > userCount) {
+        throw new CustomError(
+          `The sum of users per page and skipped users cannot be greater than total number of users. Total number of users: ${userCount}`,
+          400
+        );
+      }
       const pagesBefore = Math.ceil(usersToSkip / amount);
       const page: Page = {
-        users: users[0].map((users) => ({
+        users: users.map((users) => ({
           ...users,
           dateOfBirth: users.dateOfBirth.toISOString(),
         })),
-        numberOfUsers: users[1],
+        numberOfUsers: userCount,
         numberOfPages:
-          pagesBefore + Math.ceil((users[1] - usersToSkip) / amount),
+          pagesBefore + Math.ceil((userCount - usersToSkip) / amount),
         currentPage: pagesBefore + 1,
       };
       return page;
