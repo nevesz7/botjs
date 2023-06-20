@@ -3,6 +3,7 @@ import { User } from "./entities/user.entity";
 import { generateHash } from "./utils";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
+import { AddressRepository } from "../src/data-source";
 import { UserInput, UserPayload, PagedUser } from "../src/types";
 
 const isValidPassword = (str: string) => {
@@ -36,6 +37,9 @@ export const resolvers = {
       if (!dbUser) {
         throw new CustomError("User not found", 400);
       }
+      dbUser.address = await AddressRepository.find({
+        where: { user: dbUser },
+      });
       return dbUser;
     },
 
@@ -68,6 +72,9 @@ export const resolvers = {
         await UserRepository.findAndCount({
           order: {
             name: "ASC",
+          },
+          relations: {
+            address: true,
           },
           skip: usersToSkip,
           take: amount,

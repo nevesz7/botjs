@@ -14,19 +14,31 @@ input LoginInfo {
 	rememberMe: Boolean!
 }
 
+type Address {
+	name: String!
+	CEP: String!
+	street: String!
+	streetNumber: Int!
+	complement: String
+	neighborhood: String!
+	city: String!
+	state: String!
+}
+
 type Page {
-	users: [User]
-	numberOfUsers: Int
-	numberOfPages: Int
-	currentPage: Int
+	users: [User]!
+	numberOfUsers: Int!
+	numberOfPages: Int!
+	currentPage: Int!
 }
 
 type User {
-	name: String
-	email: String
-	dateOfBirth: String
+	name: String!
+	email: String!
+	dateOfBirth: String!
 	profession: String
-	id: Int
+	id: Int!
+	address: [Address]!
 }
 
 type Query {

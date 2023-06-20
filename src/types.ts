@@ -1,3 +1,5 @@
+import { Address } from "entities/address-entity";
+
 export type UserInput = {
   name: string;
   email: string;
@@ -12,6 +14,7 @@ export type UserPayload = {
   email: string;
   profession: string;
   dateOfBirth: Date;
+  address: Address[];
 };
 
 export type DatabaseUser = {
@@ -28,4 +31,5 @@ export type PagedUser = {
   dateOfBirth: string;
   profession: string;
   id: number;
+  address: Address[];
 };
