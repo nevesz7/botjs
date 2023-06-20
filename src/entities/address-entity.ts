@@ -4,6 +4,9 @@ import { User } from "./user.entity";
 @Entity({ name: "address" })
 export class Address {
   @PrimaryColumn()
+  name: string;
+
+  @Column()
   CEP: string;
 
   @Column()
@@ -13,7 +16,7 @@ export class Address {
   streetNumber: number;
 
   @Column({ nullable: true })
-  complement: string;
+  complement?: string;
 
   @Column()
   neighborhood: string;
