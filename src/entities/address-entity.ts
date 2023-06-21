@@ -1,10 +1,10 @@
-import { Entity, Column, PrimaryColumn, ManyToOne } from "typeorm";
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 
 @Entity({ name: "address" })
 export class Address {
-  @PrimaryColumn()
-  name: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column()
   CEP: string;

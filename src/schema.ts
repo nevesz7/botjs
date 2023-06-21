@@ -24,7 +24,7 @@ type User {
 }
 
 type Address {
-	name: String!
+	id: Int!
 	CEP: String!
 	street: String!
 	streetNumber: Int!

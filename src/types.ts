@@ -1,7 +1,7 @@
 type Address = {
   CEP: string;
   city: string;
-  name: string;
+  id: number;
   neighborhood: string;
   state: string;
   street: string;
