@@ -5,11 +5,13 @@ import { generateHash } from "../src/utils";
 import { UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
 import { getToken } from "../src/token";
+import { AddressRepository } from "../src/data-source";
 import { UserPayload, UserInput } from "../src/types";
 
 describe("login test", () => {
   beforeEach(async () => {
-    await UserRepository.clear();
+    await AddressRepository.delete({});
+    await UserRepository.delete({});
   });
 
   type DecodedTokenInfo = {
@@ -40,6 +42,16 @@ describe("login test", () => {
             id
             dateOfBirth
             email
+			address {
+				CEP
+				city
+				complement
+				name
+				neighborhood
+				state
+				street
+				streetNumber
+			  }
            }
            token
         }
@@ -61,6 +73,7 @@ describe("login test", () => {
     email: testUserData.email,
     profession: testUserData.profession,
     dateOfBirth: new Date(2000, 0, 1),
+    address: null,
   };
 
   const testError = {

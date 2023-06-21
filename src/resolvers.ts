@@ -33,13 +33,15 @@ export const resolvers = {
       if (!ctx?.id) {
         throw new CustomError("Unauthenticated", 401);
       }
-      const dbUser = await UserRepository.findOne({ where: { id } });
+      const dbUser = await UserRepository.findOne({
+        where: { id },
+        relations: {
+          address: true,
+        },
+      });
       if (!dbUser) {
         throw new CustomError("User not found", 400);
       }
-      dbUser.address = await AddressRepository.find({
-        where: { user: dbUser },
-      });
       return dbUser;
     },
 

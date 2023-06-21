@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import { UserRepository } from "../src/data-source";
+import { AddressRepository, UserRepository } from "../src/data-source";
 import { UserInput, UserPayload, PagedUser } from "../src/types";
 import { getToken } from "../src/token";
 import { getQuery } from "./utils";
@@ -17,7 +17,8 @@ describe("users query test", () => {
   };
 
   beforeEach(async () => {
-    await UserRepository.clear();
+    await AddressRepository.delete({});
+    await UserRepository.delete({});
     await UserRepository.save({
       ...testUserData,
       password: generateHash(testUserData.password),

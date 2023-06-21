@@ -28,6 +28,7 @@ const generateRandomUser = () => {
     ),
     profession: faker.person.jobDescriptor(),
     dateOfBirth: faker.date.birthdate(),
+    address: [],
   };
   return newUser;
 };
