@@ -27,9 +27,6 @@ export class Address {
   @Column()
   state: string;
 
-  @ManyToOne(() => User, (user) => user.address, {
-    cascade: true,
-    onDelete: "CASCADE",
-  })
+  @ManyToOne(() => User, (user) => user.address)
   user: User;
 }

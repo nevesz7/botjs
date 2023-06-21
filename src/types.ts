@@ -1,4 +1,13 @@
-import { Address } from "entities/address-entity";
+type Address = {
+  CEP: string;
+  city: string;
+  name: string;
+  neighborhood: string;
+  state: string;
+  street: string;
+  streetNumber: number;
+  complement?: string;
+};
 
 export type UserInput = {
   name: string;
@@ -23,6 +32,7 @@ export type DatabaseUser = {
   password: string;
   dateOfBirth: Date;
   profession: string;
+  address: Address[];
 };
 
 export type PagedUser = {
