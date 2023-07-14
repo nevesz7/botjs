@@ -1,3 +1,14 @@
+type Address = {
+  CEP: string;
+  city: string;
+  id: number;
+  neighborhood: string;
+  state: string;
+  street: string;
+  streetNumber: number;
+  complement?: string;
+};
+
 export type UserInput = {
   name: string;
   email: string;
@@ -12,6 +23,7 @@ export type UserPayload = {
   email: string;
   profession: string;
   dateOfBirth: Date;
+  address: Address[];
 };
 
 export type DatabaseUser = {
@@ -20,6 +32,7 @@ export type DatabaseUser = {
   password: string;
   dateOfBirth: Date;
   profession: string;
+  address: Address[];
 };
 
 export type PagedUser = {
@@ -28,4 +41,5 @@ export type PagedUser = {
   dateOfBirth: string;
   profession: string;
   id: number;
+  address: Address[];
 };

@@ -3,6 +3,7 @@ import { User } from "./entities/user.entity";
 import { generateHash } from "./utils";
 import { CustomError } from "../src/errors";
 import { getToken } from "../src/token";
+import { AddressRepository } from "../src/data-source";
 import { UserInput, UserPayload, PagedUser } from "../src/types";
 
 const isValidPassword = (str: string) => {
@@ -32,7 +33,12 @@ export const resolvers = {
       if (!ctx?.id) {
         throw new CustomError("Unauthenticated", 401);
       }
-      const dbUser = await UserRepository.findOne({ where: { id } });
+      const dbUser = await UserRepository.findOne({
+        where: { id },
+        relations: {
+          address: true,
+        },
+      });
       if (!dbUser) {
         throw new CustomError("User not found", 400);
       }
@@ -68,6 +74,9 @@ export const resolvers = {
         await UserRepository.findAndCount({
           order: {
             name: "ASC",
+          },
+          relations: {
+            address: true,
           },
           skip: usersToSkip,
           take: amount,

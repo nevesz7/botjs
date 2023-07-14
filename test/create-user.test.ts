@@ -1,7 +1,7 @@
 import "mocha";
 import { expect } from "chai";
 import { generateHash } from "../src/utils";
-import { UserRepository } from "../src/data-source";
+import { AddressRepository, UserRepository } from "../src/data-source";
 import { getMutation } from "./utils";
 import { getToken } from "../src/token";
 
@@ -19,7 +19,8 @@ describe("create user test", () => {
 
   //deleting users from repository and resetting basic input
   beforeEach(async () => {
-    await UserRepository.clear();
+    await AddressRepository.delete({});
+    await UserRepository.delete({});
     mutationInput = {
       profession: "teste",
       password:
